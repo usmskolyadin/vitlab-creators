@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Статистика блогеров</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cal+Sans&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Rubik:ital,wght@0,300..900;1,300..900&family=Unbounded:wght@200..900&display=swap" rel="stylesheet">
+    <style>
+      body { font-family: "Montserrat", sans-serif; }
+    </style>
+  </head>
+  <body class="bg-[#f0fbff] min-h-screen flex">
+
+  <!-- HEADER -->
+
+  <aside class="w-28  bg-white border-r border-[#E5E7EB] flex flex-col items-center py-6 space-y-4">
+    <!-- Иконка 1: Статистика -->
+    <a href="/" class="flex flex-col items-center p-2 group border-b border-gray-400 mx-2 pb-4">
+        <svg class="h-6 w-6 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" role="img" aria-labelledby="analyticsTitle" xmlns="http://www.w3.org/2000/svg">
+        <title id="analyticsTitle">Аналитика</title>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M3 3v18h18" />
+        <rect x="6" y="10" width="2.5" height="8" rx="0.4" ry="0.4" fill="currentColor" />
+        <rect x="11" y="6" width="2.5" height="12" rx="0.4" ry="0.4" fill="currentColor" />
+        <rect x="16" y="2" width="2.5" height="16" rx="0.4" ry="0.4" fill="currentColor" />
+        </svg>
+
+      <span class="text-xs text-gray-500 mt-1 group-hover:text-blue-600">Аналитика</span>
+    </a>
+
+    <!-- Иконка 2: Календарь -->
+    <a href="/daily" class="flex flex-col items-center p-2 group border-b border-gray-400 mx-2 pb-4">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500 group-hover:text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+      </svg>
+      <span class="text-xs text-gray-500 mt-1 group-hover:text-blue-600 text-center">Аналитика по дням</span>
+    </a>
+  </aside>
+
+
+  <main class="w-full ml-8 mr-8">
+  <header class="bg-white p-6 w-full border rounded-b-3xl border-[#E5E7EB] ">
+    <h1 class="text-2xl font-bold max-w-screen-3xl  mx-auto text-black">
+      VitLab Панель <span class="text-gray-500"> Статистика по дням</span>
+    </h1>
+  </header>
+  <div class=" mx-auto mt-8 ">
+<!-- 
+    <div id="loader" class="flex justify-center items-center py-20">
+      <svg class="animate-spin h-12 w-12 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor"
+          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z">
+        </path>
+      </svg>
+    </div> -->
+
+    <!-- Список блогеров -->
+    <section>
+      <h2 class="text-2xl font-bold text-[#111827] mb-4 mt-4">Статистика блогеров по дням</h2>
+      <div class="bg-gray-[#F9FAFB] rounded-2xl mb-6">
+        <form id="filterForm" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="relative w-full">
+            <input 
+              type="text" 
+              id="searchBlogger" 
+              placeholder="Введите имя блогера"
+              class="bg-white p-6 text-[#6B7280] font-semibold border border-[#E5E7EB] rounded-2xl w-full"
+              autocomplete="off"
+            >
+            <ul 
+              id="suggestions" 
+              class="absolute z-10 bg-white border border-[#E5E7EB] rounded-2xl mt-1 w-full shadow-lg hidden"
+            ></ul>
+
+          </div>
+          <input type="text" id="filterId" placeholder="Creator №" class="bg-white p-4 border text-[#6B7280] font-semibold border-[#E5E7EB] rounded-2xl w-full">
+        <div class="relative" id="datePickerRoot">
+          <button id="datePickerToggle" type="button"
+                  class="flex items-center gap-2 bg-white p-4 border border-[#E5E7EB] rounded-2xl w-full justify-between">
+            <div class="flex items-center gap-3 text-[#6B7280]">
+              <svg class="w-5 h-5 text-[#6B7280]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M7 10h5v5H7z" opacity="0.15"/>
+                <path d="M7 2a1 1 0 011 1v1h8V3a1 1 0 112 0v1h1a2 2 0 012 2v13a2 2 0 01-2 2H5a2 2 0 01-2-2V6a2 2 0 012-2h1V3a1 1 0 011-1zM5 8v11h14V8H5z"/>
+              </svg>
+              <div>
+                <div class="text-xs">Диапазон дат</div>
+                <div id="datePickerLabel" class="text-sm font-semibold text-[#111827]">Не выбран</div>
+              </div>
+              <div class="flex items-center gap-3">
+                <button id="dateClearBtn" class="text-sm text-[#6B7280] hover:text-gray-900 hidden">Сброс</button>
+  
+              </div>
+            </div>
+          </button>
+
+          <!-- dropdown -->
+          <div id="datePickerDropdown" class="hidden absolute z-50 mt-2 right-0 left-0 md:left-auto md:right-0 w-full md:w-[36rem]">
+            <div class="bg-white border border-[#E5E7EB] rounded-2xl shadow-lg p-4 grid md:grid-cols-2 gap-4">
+              <!-- left: календарь (месяц) -->
+              <div class="p-2">
+                <div class="flex items-center justify-between mb-3">
+                  <button id="prevMonth" class="p-2 rounded hover:bg-gray-100">
+                    <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="currentColor"><path d="M15 18l-6-6 6-6v12z"/></svg>
+                  </button>
+                  <div id="monthLabel" class="text-sm font-semibold text-gray-800"></div>
+                  <button id="nextMonth" class="p-2 rounded hover:bg-gray-100">
+                    <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="currentColor"><path d="M9 6l6 6-6 6V6z"/></svg>
+                  </button>
+                </div>
+
+                <div id="calendarGrid" class="grid grid-cols-7 gap-1 text-sm text-center text-gray-700"></div>
+
+                <div class="mt-3 text-xs text-gray-500">Кликни на первый день — это начало, на второй — конец диапазона</div>
+              </div>
+
+              <!-- right: выбранный диапазон и quick presets -->
+              <div class="p-2 flex flex-col gap-3">
+                <div class="bg-[#F9FAFB] p-3 rounded-xl">
+                  <div class="text-xs text-gray-500">Выбранный диапазон</div>
+                  <div id="selectedRange" class="mt-2 text-sm font-semibold text-gray-900">—</div>
+                  <div id="selectedDaysSummary" class="text-xs text-gray-500 mt-1"></div>
+                </div>
+
+                <div class="bg-[#F9FAFB] p-3 rounded-xl">
+                  <div class="text-xs text-gray-500 mb-2">Быстрые</div>
+                  <div class="grid grid-cols-2 gap-2">
+                    <button class="quickPreset py-2 px-3 rounded bg-white border text-sm" data-days="0">Сегодня</button>
+                    <button class="quickPreset py-2 px-3 rounded bg-white border text-sm" data-days="7">Последние 7 дней</button>
+                    <button class="quickPreset py-2 px-3 rounded bg-white border text-sm" data-days="30">Последние 30 дней</button>
+                    <button class="quickPreset py-2 px-3 rounded bg-white border text-sm" data-days="90">Последние 90 дней</button>
+                  </div>
+                </div>
+
+                <div class="mt-auto flex gap-2">
+                  <button id="applyDateBtn" type="button" class="flex-1 py-2 rounded-2xl bg-[#56a7ff] text-white font-semibold">Применить</button>
+                  <button id="cancelDateBtn" type="button" class="flex-1 py-2 rounded-2xl bg-white border border-[#E5E7EB] text-gray-700">Отмена</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+          <button type="submit" class="md:col-span-4 w-full mb-6 bg-[#56a7ff] text-white px-4 py-3 rounded-2xl transition hover:bg-blue-600">
+            Применить фильтры
+          </button>
+        </form>
+      </div>
+        <div id="bloggerList" class="grid grid-cols-1 gap-6"></div>
+        <section id="bloggerStatsDetail" class="space-y-4"></section>
+
+        <div id="bloggerStatsTable" class="mt-6"></div>
+            </section>
+        </div>
+
+
+  </main>
+<script>
+    function getPlatformIcon(platform) {
+  switch (platform.toLowerCase()) {
+    case "youtube":
+      return `
+        <svg class="mr-2" width="25px" height="25px" viewBox="0 -7 48 48" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+            
+            <title>Youtube-color</title>
+            <desc>Created with Sketch.</desc>
+            <defs>
+
+        </defs>
+            <g id="Icons" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                <g id="Color-" transform="translate(-200.000000, -368.000000)" fill="#CE1312">
+                    <path d="M219.044,391.269916 L219.0425,377.687742 L232.0115,384.502244 L219.044,391.269916 Z M247.52,375.334163 C247.52,375.334163 247.0505,372.003199 245.612,370.536366 C243.7865,368.610299 241.7405,368.601235 240.803,368.489448 C234.086,368 224.0105,368 224.0105,368 L223.9895,368 C223.9895,368 213.914,368 207.197,368.489448 C206.258,368.601235 204.2135,368.610299 202.3865,370.536366 C200.948,372.003199 200.48,375.334163 200.48,375.334163 C200.48,375.334163 200,379.246723 200,383.157773 L200,386.82561 C200,390.73817 200.48,394.64922 200.48,394.64922 C200.48,394.64922 200.948,397.980184 202.3865,399.447016 C204.2135,401.373084 206.612,401.312658 207.68,401.513574 C211.52,401.885191 224,402 224,402 C224,402 234.086,401.984894 240.803,401.495446 C241.7405,401.382148 243.7865,401.373084 245.612,399.447016 C247.0505,397.980184 247.52,394.64922 247.52,394.64922 C247.52,394.64922 248,390.73817 248,386.82561 L248,383.157773 C248,379.246723 247.52,375.334163 247.52,375.334163 L247.52,375.334163 Z" id="Youtube">
+
+        </path>
+                </g>
+            </g>
+        </svg>
+      `;
+    case "tiktok":
+      return `
+        <svg class="mr-2" width="25px" height="25px" viewBox="62.370000000000005 70.49 675.3000000000001 675.3000000000001" xmlns="http://www.w3.org/2000/svg">
+
+        <g fill="#ee1d52">
+
+        <path d="M196 498.32l1.64 4.63c-.21-.53-.81-2.15-1.64-4.63zM260.9 393.39c2.88-24.88 12.66-38.81 31.09-53.09 26.37-19.34 59.31-8.4 59.31-8.4V267a135.84 135.84 0 0 1 23.94 1.48V352s-32.93-10.94-59.3 8.41c-18.42 14.27-28.22 28.21-31.09 53.09-.09 13.51 2.34 31.17 13.53 46.44q-4.15-2.22-8.46-5.06c-24.65-17.27-29.14-43.18-29.02-61.49zM511.25 147c-18.14-20.74-25-41.68-27.48-56.39h22.82s-4.55 38.57 28.61 76.5l.46.51A132.76 132.76 0 0 1 511.25 147zM621.18 205.8v81.84s-29.12-1.19-50.67-6.91c-30.09-8-49.43-20.27-49.43-20.27s-13.36-8.75-14.44-9.36v169c0 9.41-2.47 32.91-10 52.51-9.83 25.64-25 42.47-27.79 45.91 0 0-18.45 22.75-51 38.07-29.34 13.82-55.1 13.47-62.8 13.82 0 0-44.53 1.84-84.6-25.33a169.63 169.63 0 0 1-24.16-20.26l.2.15c40.08 27.17 84.6 25.33 84.6 25.33 7.71-.35 33.47 0 62.8-13.82 32.52-15.32 51-38.07 51-38.07 2.76-3.44 18-20.27 27.79-45.92 7.51-19.59 10-43.1 10-52.51V231c1.08.62 14.43 9.37 14.43 9.37s19.35 12.28 49.44 20.27c21.56 5.72 50.67 6.91 50.67 6.91v-64.13c9.96 2.33 18.45 2.96 23.96 2.38z"/>
+
+        </g>
+
+        <path d="M597.23 203.42v64.11s-29.11-1.19-50.67-6.91c-30.09-8-49.44-20.27-49.44-20.27s-13.35-8.75-14.43-9.37V400c0 9.41-2.47 32.92-10 52.51-9.83 25.65-25 42.48-27.79 45.92 0 0-18.46 22.75-51 38.07-29.33 13.82-55.09 13.47-62.8 13.82 0 0-44.52 1.84-84.6-25.33l-.2-.15a157.5 157.5 0 0 1-11.93-13.52c-12.79-16.27-20.63-35.51-22.6-41a.24.24 0 0 1 0-.07c-3.17-9.54-9.83-32.45-8.92-54.64 1.61-39.15 14.81-63.18 18.3-69.2A162.84 162.84 0 0 1 256.68 303a148.37 148.37 0 0 1 42.22-25 141.61 141.61 0 0 1 52.4-11v64.9s-32.94-10.9-59.3 8.4c-18.43 14.28-28.21 28.21-31.09 53.09-.12 18.31 4.37 44.22 29 61.5q4.31 2.85 8.46 5.06a65.85 65.85 0 0 0 15.5 15.05c24.06 15.89 44.22 17 70 6.68C401.06 474.78 414 459.23 420 442c3.77-10.76 3.72-21.59 3.72-32.79V90.61h60c2.48 14.71 9.34 35.65 27.48 56.39a132.76 132.76 0 0 0 24.41 20.62c2.64 2.85 16.14 16.94 33.47 25.59a130.62 130.62 0 0 0 28.15 10.21z"/>
+
+        <path d="M187.89 450.39v.05l1.48 4.21c-.17-.49-.72-1.98-1.48-4.26z" fill="#69c9d0"/>
+
+        <path d="M298.9 278a148.37 148.37 0 0 0-42.22 25 162.84 162.84 0 0 0-35.52 43.5c-3.49 6-16.69 30.05-18.3 69.2-.91 22.19 5.75 45.1 8.92 54.64a.24.24 0 0 0 0 .07c2 5.44 9.81 24.68 22.6 41a157.5 157.5 0 0 0 11.93 13.52 166.64 166.64 0 0 1-35.88-33.64c-12.68-16.13-20.5-35.17-22.54-40.79a1 1 0 0 1 0-.12v-.07c-3.18-9.53-9.86-32.45-8.93-54.67 1.61-39.15 14.81-63.18 18.3-69.2a162.68 162.68 0 0 1 35.52-43.5 148.13 148.13 0 0 1 42.22-25 144.63 144.63 0 0 1 29.78-8.75 148 148 0 0 1 46.57-.69V267a141.61 141.61 0 0 0-52.45 11z" fill="#69c9d0"/>
+
+        <path d="M483.77 90.61h-60v318.61c0 11.2 0 22-3.72 32.79-6.06 17.22-18.95 32.77-36.13 39.67-25.79 10.36-45.95 9.21-70-6.68a65.85 65.85 0 0 1-15.54-15c20.49 10.93 38.83 10.74 61.55 1.62 17.17-6.9 30.08-22.45 36.12-39.68 3.78-10.76 3.73-21.59 3.73-32.78V70.49h82.85s-.93 7.92 1.14 20.12zM597.23 185.69v17.73a130.62 130.62 0 0 1-28.1-10.21c-17.33-8.65-30.83-22.74-33.47-25.59a93.69 93.69 0 0 0 9.52 5.48c21.07 10.52 41.82 13.66 52.05 12.59z" fill="#69c9d0"/>
+
+        <path d="M486.85 701.51a22.75 22.75 0 0 1-1-6.73v-.16a24.53 24.53 0 0 0 1 6.89zM536.44 694.62v.16a23.07 23.07 0 0 1-1 6.73 24.89 24.89 0 0 0 1-6.89z" fill="none"/>
+
+        <path d="M485.84 694.78a22.75 22.75 0 0 0 1 6.73 2.59 2.59 0 0 0 .14.45 25.28 25.28 0 0 0 24.16 17.8v25.59c-12.46 0-21.38.44-35-7.59-15.44-9.16-24.14-25.91-24.14-43.3 0-17.94 9.74-35.91 26.25-44.57 12-6.28 21.09-6.32 32.92-6.32v25.58a25.31 25.31 0 0 0-25.31 25.31z" fill="#69c9d0"/>
+
+        <path d="M536.64 694.78a23.07 23.07 0 0 1-1 6.73c0 .15-.09.3-.14.45a25.3 25.3 0 0 1-24.16 17.8v25.59c12.45 0 21.38.44 34.95-7.59 15.49-9.16 24.21-25.91 24.21-43.3 0-17.94-9.74-35.91-26.25-44.57-12-6.28-21.09-6.32-32.91-6.32v25.58a25.31 25.31 0 0 1 25.3 25.31z" fill="#ee1d52"/>
+
+        <path d="M119.51 620.36h93.71l-8.66 25.78H180v98.67h-30.13v-98.67h-30.36zm248.35 0v25.78h30.36v98.67h30.17v-98.67h24.52l8.66-25.78zm-134.25 29.38A14.6 14.6 0 1 0 219 635.15a14.59 14.59 0 0 0 14.61 14.59zM219 744.81h29.58v-84.75H219zM355 649h-34.6l-29.82 29.82v-58.36h-29.39l-.09 124.35h29.67v-32.4L300 704l28.8 40.77h31.72l-41.72-59.62zm283.77 36.17L674.94 649h-34.59l-29.83 29.82v-58.36h-29.38L581 744.81h29.68v-32.4L620 704l28.8 40.77h31.73zm-76.06 9.27c0 28.1-23.09 50.89-51.57 50.89s-51.57-22.79-51.57-50.89 23.09-50.89 51.57-50.89 51.57 22.8 51.57 50.91zm-26.27 0a25.3 25.3 0 1 0-25.3 25.3 25.3 25.3 0 0 0 25.3-25.28z"/>
+
+        </svg>      `;
+    case "instagram":
+      return `
+        <svg class="mr-2" width="25px" height="25px" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="2" width="28" height="28" rx="6" fill="url(#paint0_radial_87_7153)"/>
+        <rect x="2" y="2" width="28" height="28" rx="6" fill="url(#paint1_radial_87_7153)"/>
+        <rect x="2" y="2" width="28" height="28" rx="6" fill="url(#paint2_radial_87_7153)"/>
+        <path d="M23 10.5C23 11.3284 22.3284 12 21.5 12C20.6716 12 20 11.3284 20 10.5C20 9.67157 20.6716 9 21.5 9C22.3284 9 23 9.67157 23 10.5Z" fill="white"/>
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M16 21C18.7614 21 21 18.7614 21 16C21 13.2386 18.7614 11 16 11C13.2386 11 11 13.2386 11 16C11 18.7614 13.2386 21 16 21ZM16 19C17.6569 19 19 17.6569 19 16C19 14.3431 17.6569 13 16 13C14.3431 13 13 14.3431 13 16C13 17.6569 14.3431 19 16 19Z" fill="white"/>
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M6 15.6C6 12.2397 6 10.5595 6.65396 9.27606C7.2292 8.14708 8.14708 7.2292 9.27606 6.65396C10.5595 6 12.2397 6 15.6 6H16.4C19.7603 6 21.4405 6 22.7239 6.65396C23.8529 7.2292 24.7708 8.14708 25.346 9.27606C26 10.5595 26 12.2397 26 15.6V16.4C26 19.7603 26 21.4405 25.346 22.7239C24.7708 23.8529 23.8529 24.7708 22.7239 25.346C21.4405 26 19.7603 26 16.4 26H15.6C12.2397 26 10.5595 26 9.27606 25.346C8.14708 24.7708 7.2292 23.8529 6.65396 22.7239C6 21.4405 6 19.7603 6 16.4V15.6ZM15.6 8H16.4C18.1132 8 19.2777 8.00156 20.1779 8.0751C21.0548 8.14674 21.5032 8.27659 21.816 8.43597C22.5686 8.81947 23.1805 9.43139 23.564 10.184C23.7234 10.4968 23.8533 10.9452 23.9249 11.8221C23.9984 12.7223 24 13.8868 24 15.6V16.4C24 18.1132 23.9984 19.2777 23.9249 20.1779C23.8533 21.0548 23.7234 21.5032 23.564 21.816C23.1805 22.5686 22.5686 23.1805 21.816 23.564C21.5032 23.7234 21.0548 23.8533 20.1779 23.9249C19.2777 23.9984 18.1132 24 16.4 24H15.6C13.8868 24 12.7223 23.9984 11.8221 23.9249C10.9452 23.8533 10.4968 23.7234 10.184 23.564C9.43139 23.1805 8.81947 22.5686 8.43597 21.816C8.27659 21.5032 8.14674 21.0548 8.0751 20.1779C8.00156 19.2777 8 18.1132 8 16.4V15.6C8 13.8868 8.00156 12.7223 8.0751 11.8221C8.14674 10.9452 8.27659 10.4968 8.43597 10.184C8.81947 9.43139 9.43139 8.81947 10.184 8.43597C10.4968 8.27659 10.9452 8.14674 11.8221 8.0751C12.7223 8.00156 13.8868 8 15.6 8Z" fill="white"/>
+        <defs>
+        <radialGradient id="paint0_radial_87_7153" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(12 23) rotate(-55.3758) scale(25.5196)">
+        <stop stop-color="#B13589"/>
+        <stop offset="0.79309" stop-color="#C62F94"/>
+        <stop offset="1" stop-color="#8A3AC8"/>
+        </radialGradient>
+        <radialGradient id="paint1_radial_87_7153" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(11 31) rotate(-65.1363) scale(22.5942)">
+        <stop stop-color="#E0E8B7"/>
+        <stop offset="0.444662" stop-color="#FB8A2E"/>
+        <stop offset="0.71474" stop-color="#E2425C"/>
+        <stop offset="1" stop-color="#E2425C" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="paint2_radial_87_7153" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(0.500002 3) rotate(-8.1301) scale(38.8909 8.31836)">
+        <stop offset="0.156701" stop-color="#406ADC"/>
+        <stop offset="0.467799" stop-color="#6A45BE"/>
+        <stop offset="1" stop-color="#6A45BE" stop-opacity="0"/>
+        </radialGradient>
+        </defs>
+        </svg>
+      `;
+    case "vk":
+      return `
+        <svg class="mr-2" xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="25px" height="25px" viewBox="0 0 48 48">
+          <path fill="#1976d2" d="M24 4A20 20 0 1 0 24 44A20 20 0 1 0 24 4Z"></path><path fill="#fff" d="M35.937,18.041c0.046-0.151,0.068-0.291,0.062-0.416C35.984,17.263,35.735,17,35.149,17h-2.618 c-0.661,0-0.966,0.4-1.144,0.801c0,0-1.632,3.359-3.513,5.574c-0.61,0.641-0.92,0.625-1.25,0.625C26.447,24,26,23.786,26,23.199 v-5.185C26,17.32,25.827,17,25.268,17h-4.649C20.212,17,20,17.32,20,17.641c0,0.667,0.898,0.827,1,2.696v3.623 C21,24.84,20.847,25,20.517,25c-0.89,0-2.642-3-3.815-6.932C16.448,17.294,16.194,17,15.533,17h-2.643 C12.127,17,12,17.374,12,17.774c0,0.721,0.6,4.619,3.875,9.101C18.25,30.125,21.379,32,24.149,32c1.678,0,1.85-0.427,1.85-1.094 v-2.972C26,27.133,26.183,27,26.717,27c0.381,0,1.158,0.25,2.658,2c1.73,2.018,2.044,3,3.036,3h2.618 c0.608,0,0.957-0.255,0.971-0.75c0.003-0.126-0.015-0.267-0.056-0.424c-0.194-0.576-1.084-1.984-2.194-3.326 c-0.615-0.743-1.222-1.479-1.501-1.879C32.062,25.36,31.991,25.176,32,25c0.009-0.185,0.105-0.361,0.249-0.607 C32.223,24.393,35.607,19.642,35.937,18.041z"></path>
+        </svg>
+      `;
+    default:
+      return "";
+  }
+}
+async function fetchAllHistory() {
+  try {
+    const res = await fetch("/all_bloggers_history/"); 
+    if (!res.ok) {
+      console.error("Ошибка запроса:", res.status, res.statusText);
+      return;
+    }
+
+    const data = await res.json();
+    renderHistory(data);
+  } catch (e) {
+    console.error("Ошибка загрузки:", e);
+  }
+}
+
+function renderHistory(history) {
+  const container = document.getElementById("bloggerStatsTable");
+  container.innerHTML = "";
+
+  const platforms = ["youtube", "tiktok", "vk", "instagram"];
+  const metrics = ["videos", "likes", "comments", "views", "subscribers"];
+
+  const colorize = (value) => {
+    if (value > 0) return `<span class="text-green-600">${value}</span>`;
+    if (value < 0) return `<span class="text-red-600">${value}</span>`;
+    return `<span class="text-gray-500">${value}</span>`;
+  };
+
+  let html = `
+    <div class="overflow-x-auto bg-white p-4 rounded-2xl shadow">
+      <table class="min-w-full text-md text-gray-700 font-regular border-collapse">
+        <thead>
+          <tr class="border-b bg-gray-50">
+            <th class="p-2">Дата</th>
+            <th class="p-2">Блогер</th>
+            <th class="p-2">Creator №</th>
+  `;
+
+  platforms.forEach(p => {
+    html += `
+    <th class="p-2 text-center">
+        <div class="flex items-center justify-center gap-2">
+        ${getPlatformIcon(p)}
+        <span>${p.charAt(0).toUpperCase() + p.slice(1)}</span>
+        </div>
+    </th>
+    `;
+  });
+
+  html += `</tr></thead><tbody>`;
+
+  history.forEach(row => {
+    html += `<tr class="border-b"><td class="p-2">${row.day}</td><td class="p-2">${row.name}</td><td class="p-2">${row.blogger_id}</td>`;
+
+    platforms.forEach(p => {
+      if (row.stats && row.stats[p]) {
+        const s = row.stats[p];
+        html += `<td class="p-2 text-sm">
+          <div>Видео: ${s.videos}</div>
+          <div>Просмотры: ${s.views}</div>
+        </td>`;
+      } else {
+        html += `<td class="p-2 text-center">-</td>`;
+      }
+    });
+
+    html += `</tr>`;
+  });
+
+  html += `</tbody></table></div>`;
+  container.innerHTML = html;
+}
+
+// Запрашиваем данные при загрузке страницы
+fetchAllHistory();
+</script>
+
+<script>
+(function(){
+  const pad = v => v.toString().padStart(2, '0');
+  const toISO = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
+  const root = document.getElementById('datePickerRoot');
+  const toggle = document.getElementById('datePickerToggle');
+  const dropdown = document.getElementById('datePickerDropdown');
+  const chevron = document.getElementById('datePickerChevron');
+  const monthLabel = document.getElementById('monthLabel');
+  const grid = document.getElementById('calendarGrid');
+  const prevBtn = document.getElementById('prevMonth');
+  const nextBtn = document.getElementById('nextMonth');
+  const selectedRangeLabel = document.getElementById('selectedRange');
+  const selectedDaysSummary = document.getElementById('selectedDaysSummary');
+  const applyBtn = document.getElementById('applyDateBtn');
+  const cancelBtn = document.getElementById('cancelDateBtn');
+  const clearBtn = document.getElementById('dateClearBtn');
+  const label = document.getElementById('datePickerLabel');
+  const quicks = document.querySelectorAll('.quickPreset');
+
+  let viewDate = new Date(); 
+  viewDate.setDate(1);
+  let startDate = null;
+  let endDate = null;
+
+  toggle.addEventListener('click', (e) => {
+    const opened = !dropdown.classList.contains('hidden');
+    if (opened) {
+      hideDropdown();
+    } else {
+      showDropdown();
+    }
+  });
+
+  function showDropdown(){
+    dropdown.classList.remove('hidden');
+    chevron.style.transform = 'rotate(180deg)';
+    renderCalendar();
+  }
+  function hideDropdown(){
+    dropdown.classList.add('hidden');
+    chevron.style.transform = '';
+  }
+
+  cancelBtn.addEventListener('click', () => {
+    hideDropdown();
+  });
+
+  clearBtn.addEventListener('click', () => {
+    startDate = null; endDate = null;
+    updateLabels();
+    clearBtn.classList.add('hidden');
+  });
+
+  prevBtn.addEventListener('click', () => {
+    viewDate.setMonth(viewDate.getMonth() - 1);
+    renderCalendar();
+  });
+  nextBtn.addEventListener('click', () => {
+    viewDate.setMonth(viewDate.getMonth() + 1);
+    renderCalendar();
+  });
+
+  // quick presets
+  quicks.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const days = parseInt(btn.dataset.days, 10);
+      const today = new Date();
+      const from = new Date();
+      from.setDate(today.getDate() - (days - 0));
+      startDate = from;
+      endDate = today;
+      viewDate = new Date(today.getFullYear(), today.getMonth(), 1);
+      renderCalendar();
+      updateLabels();
+    });
+  });
+
+  // apply -> call global fetchData with filters (keep others)
+  applyBtn.addEventListener('click', () => {
+    if (!startDate || !endDate) return;
+    const filters = {};
+    filters.date_from = toISO(startDate);
+    filters.date_to = toISO(endDate);
+
+    if (typeof fetchData === 'function') {
+      const name = document.getElementById('filterName')?.value || '';
+      const bloggerId = document.getElementById('filterId')?.value || '';
+      if (name) filters.name = name;
+      if (bloggerId) filters.blogger_id = bloggerId;
+      fetchData(filters);
+    }
+
+    updateLabels();
+    hideDropdown();
+  });
+
+  // render calendar grid
+  function renderCalendar(){
+    // header
+    const monthNames = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
+    monthLabel.textContent = `${monthNames[viewDate.getMonth()]} ${viewDate.getFullYear()}`;
+
+    // build grid: week day headers + days
+    grid.innerHTML = '';
+    const weekDays = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+    weekDays.forEach(w => {
+      const el = document.createElement('div');
+      el.className = 'text-xs text-gray-400';
+      el.textContent = w;
+      grid.appendChild(el);
+    });
+
+    // first day of month (Mon-based)
+    const firstDay = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
+    const lastDay = new Date(viewDate.getFullYear(), viewDate.getMonth()+1, 0);
+    const startOffset = (firstDay.getDay() + 6) % 7; // convert Sun(0)..Sat(6) -> Mon(0)..Sun(6)
+
+    // blank cells before month
+    for (let i=0;i<startOffset;i++){
+      const cell = document.createElement('div');
+      cell.className = 'text-sm py-2';
+      grid.appendChild(cell);
+    }
+
+    // days
+    for (let d=1; d<=lastDay.getDate(); d++){
+      const dt = new Date(viewDate.getFullYear(), viewDate.getMonth(), d);
+      const cell = document.createElement('button');
+      cell.className = 'text-sm py-2 rounded-lg focus:outline-none';
+      cell.textContent = d;
+
+      // styling: today
+      const today = new Date();
+      if (dt.toDateString() === today.toDateString()){
+        cell.classList.add('ring-1','ring-[#56a7ff]','font-semibold');
+      }
+
+      // if selected
+      if (isSameDate(dt, startDate)) {
+        cell.classList.add('bg-[#56a7ff]','text-white');
+      } else if (isSameDate(dt, endDate)) {
+        cell.classList.add('bg-[#56a7ff]','text-white');
+      } else if (isInRange(dt, startDate, endDate)){
+        cell.classList.add('bg-[#E6F0FF]','text-[#0B69CC]');
+      } else {
+        cell.classList.add('hover:bg-gray-100');
+      }
+      cell.type = "button"; // 👈 обязательно!
+      cell.className = 'text-sm py-2 rounded-lg focus:outline-none';
+      cell.classList.add('hover:ring-1', 'hover:ring-[#56a7ff]');
+      cell.textContent = d;
+
+      cell.addEventListener('click', (e) => {
+        e.stopPropagation(); // чтобы dropdown не закрылся
+
+        if (!startDate || (startDate && endDate)) {
+          startDate = dt;
+          endDate = null;
+        } else {
+          if (dt < startDate) {
+            endDate = startDate;
+            startDate = dt;
+          } else {
+            endDate = dt;
+          }
+        }
+
+        renderCalendar();
+        updateLabels();
+      });
+
+      grid.appendChild(cell);
+    }
+  }
+
+  function isSameDate(a,b){
+    if (!a || !b) return false;
+    return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+  }
+  function isInRange(day, a, b){
+    if (!a || !b) return false;
+    const da = startOfDay(a).getTime();
+    const db = startOfDay(b).getTime();
+    const dd = startOfDay(day).getTime();
+    return dd>da && dd<db;
+  }
+  function startOfDay(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+
+  function updateLabels(){
+    if (startDate && endDate){
+      selectedRangeLabel.textContent = `${toISO(startDate)} → ${toISO(endDate)}`;
+      label.textContent = `${toISO(startDate)} — ${toISO(endDate)}`;
+      selectedDaysSummary.textContent = `${Math.ceil((startOfDay(endDate)-startOfDay(startDate))/(1000*60*60*24))+1} дн.`;
+      clearBtn.classList.remove('hidden');
+    } else if (startDate && !endDate){
+      selectedRangeLabel.textContent = `${toISO(startDate)} → —`;
+      label.textContent = `${toISO(startDate)} —`;
+      selectedDaysSummary.textContent = `Выберите конечную дату`;
+      clearBtn.classList.remove('hidden');
+    } else {
+      selectedRangeLabel.textContent = '—';
+      label.textContent = 'Не выбран';
+      selectedDaysSummary.textContent = '';
+      clearBtn.classList.add('hidden');
+    }
+  }
+
+  document.addEventListener('click', (e) => {
+    if (!root.contains(e.target)) {
+      hideDropdown();
+    }
+  });
+
+  renderCalendar();
+  updateLabels();
+
+})();
+
+</script>
+</body>
+</html>
