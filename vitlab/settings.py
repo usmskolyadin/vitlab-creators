@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-)xy&ymb#(2@vo53y-$2=rn+!2(*!-xjf2o+3y6&8d2nnejtu_k
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["vitlab-crm.ru", "www.vitlab-crm.ru"]
+ALLOWED_HOSTS = ["vitlab-crm.ru", "www.vitlab-crm.ru", "127.0.0.1"]
 
 
 INSTALLED_APPS = [

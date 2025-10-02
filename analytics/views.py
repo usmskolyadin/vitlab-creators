@@ -144,37 +144,51 @@ def update_instagram_stats(blogger):
 
 def update_all_platforms(blogger):
     """Обновляет все платформы для одного блогера."""
-    # update_youtube_stats(blogger)
-    # update_tiktok_stats(blogger)
-    # update_vk_stats(blogger)
-    # update_instagram_stats(blogger)
+    update_youtube_stats(blogger)
+    update_tiktok_stats(blogger)
+    update_vk_stats(blogger)
+    update_instagram_stats(blogger)
 
 from django.db.models import Q
+
 
 def bloggers_list(request):
     data = []
     platforms = ["youtube", "tiktok", "vk", "instagram"]
 
-    name = request.GET.get("name")
-    blogger_id = request.GET.get("blogger_id")
+    names = request.GET.getlist("name")
+    blogger_ids = request.GET.getlist("blogger_id")
     date_from = request.GET.get("date_from")
     date_to = request.GET.get("date_to")
 
     bloggers = Blogger.objects.all()
 
-    if name:
-        bloggers = bloggers.filter(Q(first_name__icontains=name) | Q(last_name__icontains=name))
+    combined_q = Q()
 
-    if blogger_id:
-        bloggers = bloggers.filter(id=blogger_id)
+    # Фильтр по именам
+    if names:
+        for name in names:
+            words = name.strip().split()
+            name_q = Q()
+            for word in words:
+                name_q |= Q(first_name__icontains=word) | Q(last_name__icontains=word)
+            combined_q |= name_q
 
+    # Фильтр по ID
+    if blogger_ids:
+        combined_q |= Q(id__in=blogger_ids)
+
+    if combined_q:
+        bloggers = bloggers.filter(combined_q).distinct()
+
+    # Фильтр по дате
     if date_from and date_to:
         bloggers = bloggers.filter(
             stats__parsed_at__date__range=[date_from, date_to]
         ).distinct()
 
     for b in bloggers:
-        update_all_platforms(b) 
+        update_all_platforms(b)
 
         stats_dict = {}
         for platform in platforms:
@@ -185,10 +199,7 @@ def bloggers_list(request):
                 .first()
             )
             if latest_stat:
-                # динамически берём ссылку из Blogger по имени поля
                 url_field = f"{platform}_url"
-                platform_url = getattr(b, url_field, None)
-
                 stats_dict[platform] = {
                     "likes": latest_stat["likes"],
                     "comments": latest_stat["comments"],
@@ -196,7 +207,7 @@ def bloggers_list(request):
                     "views": latest_stat["views"],
                     "subscribers": latest_stat["subscribers"],
                     "parsed_at": latest_stat["parsed_at"].strftime("%d.%m.%Y %H:%M"),
-                    "url": platform_url,
+                    "url": getattr(b, url_field, None),
                 }
 
         data.append({
@@ -207,11 +218,7 @@ def bloggers_list(request):
             "stats": stats_dict,
         })
 
-    print("date_from:", date_from, "date_to:", date_to)
-    print("bloggers before date filter:", bloggers.count())
-
     return JsonResponse(data, safe=False)
-
 
 def stats_summary(request):
     summary = SocialStats.objects.aggregate(
@@ -314,31 +321,69 @@ from django.db.models import Max
 from django.db.models.functions import TruncDate
 from django.http import JsonResponse
 
-from django.db.models.functions import TruncDate
-from django.http import JsonResponse
+from django.db.models.functions import Concat
+
 def all_bloggers_history(request):
-    # Получаем все SocialStats, группируем по дню и блогеру
+    from django.db.models import Q
+    from django.db.models.functions import Concat
+    from django.db.models import Value, CharField
+
+    # Получаем фильтры
+    name_filter = [n.strip() for n in request.GET.getlist("name") if n.strip()]
+    id_filter = [i.strip() for i in request.GET.getlist("blogger_id") if i.strip()]
+    date_from = request.GET.get("date_from")
+    date_to = request.GET.get("date_to")
+
+    # 1️⃣ Базовый queryset
+    bloggers_qs = Blogger.objects.all()
+
+    # 2️⃣ Фильтр по имени (любая часть full name)
+    if name_filter:
+        q = Q()
+        for n in name_filter:
+            # соединяем first_name + " " + last_name
+            q |= Q(
+                first_name__icontains=n
+            ) | Q(
+                last_name__icontains=n
+            ) | Q(
+                concat_name__icontains=n  # см. аннотацию ниже
+            )
+        bloggers_qs = bloggers_qs.annotate(
+            concat_name=Concat('first_name', Value(' '), 'last_name', output_field=CharField())
+        ).filter(q)
+
+    # 3️⃣ Фильтр по blogger_id (CharField)
+    if id_filter:
+        bloggers_qs = bloggers_qs.filter(blogger_id__in=id_filter)
+
+    # 4️⃣ Берем stats только для выбранных блогеров
+    stats = SocialStats.objects.filter(blogger__in=bloggers_qs)
+
+    # 5️⃣ Фильтр по дате
+    if date_from:
+        stats = stats.filter(parsed_at__date__gte=date_from)
+    if date_to:
+        stats = stats.filter(parsed_at__date__lte=date_to)
+
+    # 6️⃣ Группировка и подготовка данных (как у тебя)
     stats = (
-        SocialStats.objects
-        .select_related("blogger")
-        .annotate(day=TruncDate("parsed_at"))
-        .values("day", "blogger__id", "blogger__first_name", "blogger__last_name", "platform")
-        .annotate(
-            likes=Max("likes"),
-            comments=Max("comments"),
-            videos=Max("videos"),
-            views=Max("views"),
-            subscribers=Max("subscribers"),
-        )
-        .order_by("day", "blogger__id", "platform")
+        stats.annotate(day=TruncDate("parsed_at"))
+             .values("day", "blogger__id", "blogger__first_name", "blogger__last_name", "platform")
+             .annotate(
+                 likes=Max("likes"),
+                 comments=Max("comments"),
+                 videos=Max("videos"),
+                 views=Max("views"),
+                 subscribers=Max("subscribers"),
+             )
+             .order_by("day", "blogger__id", "platform")
     )
 
-    # Словарь для объединения платформ по дню и блогеру
+    # Формирование словаря истории и дельт — оставляем без изменений
     history_dict = {}
-
     for row in stats:
         key = (row["day"], row["blogger__id"])
-
         if key not in history_dict:
             history_dict[key] = {
                 "day": row["day"].strftime("%Y-%m-%d"),
@@ -346,8 +391,6 @@ def all_bloggers_history(request):
                 "name": f'{row["blogger__first_name"]} {row["blogger__last_name"]}',
                 "stats": {}
             }
-
-        # Сохраняем статистику по платформе
         history_dict[key]["stats"][row["platform"]] = {
             "likes": row["likes"],
             "comments": row["comments"],
@@ -356,17 +399,13 @@ def all_bloggers_history(request):
             "subscribers": row["subscribers"],
         }
 
-    # Список для финального JSON с подсчетом дельты относительно предыдущего дня
     final_history = []
     prev_day_data = {}
-
     for key in sorted(history_dict.keys()):
         day_record = history_dict[key]
-        day = day_record["day"]
         blogger_id = day_record["blogger_id"]
         stats_today = day_record["stats"]
 
-        # Вычисляем дельту по сравнению с предыдущим днем для этого блогера
         delta_stats = {}
         prev_stats = prev_day_data.get(blogger_id, {})
         for platform, s in stats_today.items():
@@ -380,12 +419,11 @@ def all_bloggers_history(request):
             }
 
         final_history.append({
-            "day": day,
+            "day": day_record["day"],
             "blogger_id": blogger_id,
             "name": day_record["name"],
             "stats": delta_stats
         })
-
         prev_day_data[blogger_id] = stats_today
 
     return JsonResponse(final_history, safe=False)

@@ -65,7 +65,8 @@
           <div class="relative w-full">
             <input 
               type="text" 
-              id="searchBlogger" 
+              id="filterName"
+              
               placeholder="Введите имя блогера"
               class="bg-white p-6 text-[#6B7280] font-semibold border border-[#E5E7EB] rounded-2xl w-full"
               autocomplete="off"
@@ -76,7 +77,7 @@
             ></ul>
 
           </div>
-          <input type="text" id="filterId" placeholder="Creator №" class="bg-white p-4 border text-[#6B7280] font-semibold border-[#E5E7EB] rounded-2xl w-full">
+          <input type="text" id="filterId" name="blogger_id" placeholder="Creator №" class="bg-white p-4 border text-[#6B7280] font-semibold border-[#E5E7EB] rounded-2xl w-full">
         <div class="relative" id="datePickerRoot">
           <button id="datePickerToggle" type="button"
                   class="flex items-center gap-2 bg-white p-4 border border-[#E5E7EB] rounded-2xl w-full justify-between">
@@ -89,10 +90,7 @@
                 <div class="text-xs">Диапазон дат</div>
                 <div id="datePickerLabel" class="text-sm font-semibold text-[#111827]">Не выбран</div>
               </div>
-              <div class="flex items-center gap-3">
-                <button id="dateClearBtn" class="text-sm text-[#6B7280] hover:text-gray-900 hidden">Сброс</button>
-  
-              </div>
+
             </div>
           </button>
 
@@ -102,11 +100,11 @@
               <!-- left: календарь (месяц) -->
               <div class="p-2">
                 <div class="flex items-center justify-between mb-3">
-                  <button id="prevMonth" class="p-2 rounded hover:bg-gray-100">
+                  <button id="prevMonth" type="button" class="p-2 rounded hover:bg-gray-100">
                     <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="currentColor"><path d="M15 18l-6-6 6-6v12z"/></svg>
                   </button>
                   <div id="monthLabel" class="text-sm font-semibold text-gray-800"></div>
-                  <button id="nextMonth" class="p-2 rounded hover:bg-gray-100">
+                  <button id="nextMonth" type="button" class="p-2 rounded hover:bg-gray-100">
                     <svg class="w-5 h-5 text-gray-600" viewBox="0 0 24 24" fill="currentColor"><path d="M9 6l6 6-6 6V6z"/></svg>
                   </button>
                 </div>
@@ -142,9 +140,12 @@
             </div>
           </div>
         </div>
-          <button type="submit" class="md:col-span-4 w-full mb-6 bg-[#56a7ff] text-white px-4 py-3 rounded-2xl transition hover:bg-blue-600">
-            Применить фильтры
+
+          <button id="resetFiltersBtn" type="button" 
+                class="md:col-span-4 w-full mb-6 bg-gray-200 text-gray-700 px-4 py-3 rounded-2xl transition hover:bg-gray-300">
+           Сбросить все фильтры
           </button>
+
         </form>
       </div>
         <div id="bloggerList" class="grid grid-cols-1 gap-6"></div>
@@ -243,9 +244,21 @@
       return "";
   }
 }
-async function fetchAllHistory() {
+async function fetchData(filters = {}) {
   try {
-    const res = await fetch("/all_bloggers_history/"); 
+    // Формируем URL с параметрами фильтров
+    const url = new URL("/all_bloggers_history/", window.location.origin);
+
+    Object.keys(filters).forEach(key => {
+      if (Array.isArray(filters[key])) {
+        filters[key].forEach(v => url.searchParams.append(key, v));
+      } else if (filters[key]) {
+        url.searchParams.append(key, filters[key]);
+      }
+    });
+
+
+    const res = await fetch(url);
     if (!res.ok) {
       console.error("Ошибка запроса:", res.status, res.statusText);
       return;
@@ -295,12 +308,12 @@ function renderHistory(history) {
   html += `</tr></thead><tbody>`;
 
   history.forEach(row => {
-    html += `<tr class="border-b"><td class="p-2">${row.day}</td><td class="p-2">${row.name}</td><td class="p-2">${row.blogger_id}</td>`;
+    html += `<tr class="border-b"><td class="p-2 text-center">${row.day}</td><td class="p-2 text-center">${row.name}</td><td class="p-2 text-center">${row.blogger_id}</td>`;
 
     platforms.forEach(p => {
       if (row.stats && row.stats[p]) {
         const s = row.stats[p];
-        html += `<td class="p-2 text-sm">
+        html += `<td class="p-2 text-sm text-center">
           <div>Видео: ${s.videos}</div>
           <div>Просмотры: ${s.views}</div>
         </td>`;
@@ -317,7 +330,163 @@ function renderHistory(history) {
 }
 
 // Запрашиваем данные при загрузке страницы
-fetchAllHistory();
+fetchData();
+</script>
+
+
+<script>
+let selectedBloggers = []; // выбранные имена
+let selectedIds = [];      // выбранные ID
+
+const filterNameInput = document.getElementById("filterName");
+const filterIdInput = document.getElementById("filterId");
+const suggestionsList = document.createElement("ul");
+suggestionsList.className = "absolute bg-white border rounded shadow-md mt-1 z-50 w-full hidden";
+filterNameInput.parentNode.appendChild(suggestionsList);
+
+function renderSelectedTags() {
+  // контейнер для блогеров
+  let nameContainer = filterNameInput.parentNode.querySelector(".tag-container.names");
+  if (!nameContainer) {
+    nameContainer = document.createElement("div");
+    nameContainer.className = "tag-container names flex flex-wrap gap-2 mt-2";
+    filterNameInput.parentNode.appendChild(nameContainer);
+  }
+  nameContainer.innerHTML = "";
+  selectedBloggers.forEach(name => {
+    const tag = document.createElement("span");
+    tag.className = "bg-green-100 text-green-700 px-3 py-1 rounded-xl text-sm flex items-center gap-1";
+    tag.innerHTML = `${name} <button class="ml-1 text-red-500">&times;</button>`;
+    tag.querySelector("button").addEventListener("click", () => {
+      selectedBloggers = selectedBloggers.filter(n => n !== name);
+      renderSelectedTags();
+      applyFilters();
+    });
+    nameContainer.appendChild(tag);
+  });
+
+  // контейнер для ID
+  let idContainer = filterIdInput.parentNode.querySelector(".tag-container.ids");
+  if (!idContainer) {
+    idContainer = document.createElement("div");
+    idContainer.className = "tag-container ids flex flex-wrap gap-2 mt-2";
+    filterIdInput.parentNode.appendChild(idContainer);
+  }
+  idContainer.innerHTML = "";
+  selectedIds.forEach(id => {
+    const tag = document.createElement("span");
+    tag.className = "bg-blue-100 text-blue-700 px-3 py-1 rounded-xl text-sm flex items-center gap-1";
+    tag.innerHTML = `${id} <button class="ml-1 text-red-500">&times;</button>`;
+    tag.querySelector("button").addEventListener("click", () => {
+      selectedIds = selectedIds.filter(i => i !== id);
+      renderSelectedTags();
+      applyFilters();
+    });
+    idContainer.appendChild(tag);
+  });
+}
+function applyFilters() {
+  const filters = {};
+
+  if (selectedBloggers.length) filters.name = [...selectedBloggers]; // массив имён
+  if (selectedIds.length) filters.blogger_id = [...selectedIds];      // массив ID
+  if (startDate && endDate) {
+    filters.date_from = toISO(startDate);
+    filters.date_to = toISO(endDate);
+  }
+
+  fetchData(filters); // передаем объект фильтров
+}
+
+
+// Обработка ввода имени
+filterNameInput.addEventListener("input", async () => {
+  const query = filterNameInput.value.trim();
+  if (query.length < 2) {
+    suggestionsList.classList.add("hidden");
+    return;
+  }
+
+  const res = await fetch(`/all_bloggers_history/?name=${encodeURIComponent(query)}`);
+  const data = await res.json();
+  suggestionsList.innerHTML = "";
+
+  if (!data.length) {
+    suggestionsList.classList.add("hidden");
+    return;
+  }
+
+  data.forEach(b => {
+    const li = document.createElement("li");
+    li.textContent = b.name;
+    li.className = "px-3 py-2 hover:bg-gray-100 cursor-pointer";
+    li.addEventListener("click", () => {
+      if (!selectedBloggers.includes(b.name)) {
+        selectedBloggers.push(b.name);
+        renderSelectedTags();
+        applyFilters();
+      }
+      filterNameInput.value = "";
+      suggestionsList.classList.add("hidden");
+    });
+    suggestionsList.appendChild(li);
+  });
+  suggestionsList.classList.remove("hidden");
+});
+
+// Enter для имени
+filterNameInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    const val = filterNameInput.value.trim();
+    if (val && !selectedBloggers.includes(val)) {
+      selectedBloggers.push(val);
+      renderSelectedTags();
+      applyFilters();
+    }
+    filterNameInput.value = "";
+    suggestionsList.classList.add("hidden");
+  }
+});
+
+// Ввод ID
+filterIdInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    const val = filterIdInput.value.trim();
+    if (val && !selectedIds.includes(val)) {
+      selectedIds.push(val);
+      renderSelectedTags();
+      applyFilters();
+    }
+    filterIdInput.value = "";
+  }
+});
+
+// Клик вне списка скрывает suggestions
+document.addEventListener("click", (e) => {
+  if (!filterNameInput.contains(e.target) && !suggestionsList.contains(e.target)) {
+    suggestionsList.classList.add("hidden");
+  }
+});
+
+// Инициализация
+renderSelectedTags();
+const resetFiltersBtn = document.getElementById('resetFiltersBtn');
+resetFiltersBtn.addEventListener('click', () => {
+  // очистка полей
+  document.getElementById('filterName').value = '';
+  document.getElementById('filterId').value = '';
+  startDate = null;
+  endDate = null;
+  updateLabels(); // обновляем календарь
+
+  // если нужно сразу показать все данные
+  if (typeof fetchData === 'function') {
+    fetchData({}); // пустые фильтры
+  }
+});
+
 </script>
 
 <script>
@@ -340,53 +509,51 @@ fetchAllHistory();
   const clearBtn = document.getElementById('dateClearBtn');
   const label = document.getElementById('datePickerLabel');
   const quicks = document.querySelectorAll('.quickPreset');
-
+  dropdown.addEventListener('click', e => {
+    e.stopPropagation();
+  });
   let viewDate = new Date(); 
   viewDate.setDate(1);
   let startDate = null;
   let endDate = null;
 
-  toggle.addEventListener('click', (e) => {
-    const opened = !dropdown.classList.contains('hidden');
-    if (opened) {
-      hideDropdown();
-    } else {
-      showDropdown();
-    }
+  // открытие/закрытие дропдауна
+  toggle.addEventListener('click', () => {
+    dropdown.classList.toggle('hidden');
+    chevron.style.transform = dropdown.classList.contains('hidden') ? '' : 'rotate(180deg)';
+    if(!dropdown.classList.contains('hidden')) renderCalendar();
   });
 
-  function showDropdown(){
-    dropdown.classList.remove('hidden');
-    chevron.style.transform = 'rotate(180deg)';
-    renderCalendar();
-  }
-  function hideDropdown(){
+  cancelBtn.addEventListener('click', (e) => {
+    e.preventDefault();
     dropdown.classList.add('hidden');
     chevron.style.transform = '';
-  }
-
-  cancelBtn.addEventListener('click', () => {
-    hideDropdown();
   });
 
-  clearBtn.addEventListener('click', () => {
+  clearBtn.addEventListener('click', (e) => {
+    e.preventDefault();
     startDate = null; endDate = null;
     updateLabels();
     clearBtn.classList.add('hidden');
   });
 
-  prevBtn.addEventListener('click', () => {
+  // переключение месяца без закрытия меню
+  prevBtn.addEventListener('click', (e) => {
+    e.preventDefault();
     viewDate.setMonth(viewDate.getMonth() - 1);
     renderCalendar();
   });
-  nextBtn.addEventListener('click', () => {
+
+  nextBtn.addEventListener('click', (e) => {
+    e.preventDefault();
     viewDate.setMonth(viewDate.getMonth() + 1);
     renderCalendar();
   });
 
-  // quick presets
+  // быстрые кнопки
   quicks.forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
       const days = parseInt(btn.dataset.days, 10);
       const today = new Date();
       const from = new Date();
@@ -399,32 +566,32 @@ fetchAllHistory();
     });
   });
 
-  // apply -> call global fetchData with filters (keep others)
-  applyBtn.addEventListener('click', () => {
+  // применение фильтров
+  applyBtn.addEventListener('click', (e) => {
+    e.preventDefault();
     if (!startDate || !endDate) return;
     const filters = {};
     filters.date_from = toISO(startDate);
     filters.date_to = toISO(endDate);
 
-    if (typeof fetchData === 'function') {
-      const name = document.getElementById('filterName')?.value || '';
-      const bloggerId = document.getElementById('filterId')?.value || '';
-      if (name) filters.name = name;
-      if (bloggerId) filters.blogger_id = bloggerId;
+    const name = document.getElementById('filterName')?.value || '';
+    const bloggerId = document.getElementById('filterId')?.value || '';
+    if(name) filters.name = name;
+    if(bloggerId) filters.blogger_id = bloggerId;
+
+    if(typeof fetchData === 'function'){
       fetchData(filters);
     }
-
     updateLabels();
-    hideDropdown();
+    dropdown.classList.add('hidden');
+    chevron.style.transform = '';
   });
 
-  // render calendar grid
+  // рендер календаря
   function renderCalendar(){
-    // header
     const monthNames = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
     monthLabel.textContent = `${monthNames[viewDate.getMonth()]} ${viewDate.getFullYear()}`;
 
-    // build grid: week day headers + days
     grid.innerHTML = '';
     const weekDays = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
     weekDays.forEach(w => {
@@ -434,61 +601,44 @@ fetchAllHistory();
       grid.appendChild(el);
     });
 
-    // first day of month (Mon-based)
     const firstDay = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
     const lastDay = new Date(viewDate.getFullYear(), viewDate.getMonth()+1, 0);
-    const startOffset = (firstDay.getDay() + 6) % 7; // convert Sun(0)..Sat(6) -> Mon(0)..Sun(6)
+    const startOffset = (firstDay.getDay() + 6) % 7;
 
-    // blank cells before month
     for (let i=0;i<startOffset;i++){
       const cell = document.createElement('div');
       cell.className = 'text-sm py-2';
       grid.appendChild(cell);
     }
 
-    // days
-    for (let d=1; d<=lastDay.getDate(); d++){
+    for(let d=1; d<=lastDay.getDate(); d++){
       const dt = new Date(viewDate.getFullYear(), viewDate.getMonth(), d);
       const cell = document.createElement('button');
-      cell.className = 'text-sm py-2 rounded-lg focus:outline-none';
+      cell.type = "button";
+      cell.className = 'text-sm py-2 rounded-lg focus:outline-none hover:ring-1 hover:ring-[#56a7ff]';
       cell.textContent = d;
 
-      // styling: today
       const today = new Date();
-      if (dt.toDateString() === today.toDateString()){
+      if(dt.toDateString() === today.toDateString()){
         cell.classList.add('ring-1','ring-[#56a7ff]','font-semibold');
       }
-
-      // if selected
-      if (isSameDate(dt, startDate)) {
+      if(isSameDate(dt, startDate) || isSameDate(dt, endDate)){
         cell.classList.add('bg-[#56a7ff]','text-white');
-      } else if (isSameDate(dt, endDate)) {
-        cell.classList.add('bg-[#56a7ff]','text-white');
-      } else if (isInRange(dt, startDate, endDate)){
+      } else if(isInRange(dt, startDate, endDate)){
         cell.classList.add('bg-[#E6F0FF]','text-[#0B69CC]');
       } else {
         cell.classList.add('hover:bg-gray-100');
       }
-      cell.type = "button"; // 👈 обязательно!
-      cell.className = 'text-sm py-2 rounded-lg focus:outline-none';
-      cell.classList.add('hover:ring-1', 'hover:ring-[#56a7ff]');
-      cell.textContent = d;
 
-      cell.addEventListener('click', (e) => {
-        e.stopPropagation(); // чтобы dropdown не закрылся
-
-        if (!startDate || (startDate && endDate)) {
-          startDate = dt;
-          endDate = null;
+      cell.addEventListener('click', (e)=>{
+        e.preventDefault();
+        e.stopPropagation();
+        if(!startDate || (startDate && endDate)){
+          startDate = dt; endDate = null;
         } else {
-          if (dt < startDate) {
-            endDate = startDate;
-            startDate = dt;
-          } else {
-            endDate = dt;
-          }
+          if(dt < startDate){ endDate = startDate; startDate = dt; } 
+          else endDate = dt;
         }
-
         renderCalendar();
         updateLabels();
       });
@@ -498,25 +648,25 @@ fetchAllHistory();
   }
 
   function isSameDate(a,b){
-    if (!a || !b) return false;
+    if(!a||!b) return false;
     return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
   }
   function isInRange(day, a, b){
-    if (!a || !b) return false;
-    const da = startOfDay(a).getTime();
-    const db = startOfDay(b).getTime();
-    const dd = startOfDay(day).getTime();
+    if(!a||!b) return false;
+    const da=startOfDay(a).getTime();
+    const db=startOfDay(b).getTime();
+    const dd=startOfDay(day).getTime();
     return dd>da && dd<db;
   }
   function startOfDay(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
 
   function updateLabels(){
-    if (startDate && endDate){
+    if(startDate && endDate){
       selectedRangeLabel.textContent = `${toISO(startDate)} → ${toISO(endDate)}`;
       label.textContent = `${toISO(startDate)} — ${toISO(endDate)}`;
       selectedDaysSummary.textContent = `${Math.ceil((startOfDay(endDate)-startOfDay(startDate))/(1000*60*60*24))+1} дн.`;
       clearBtn.classList.remove('hidden');
-    } else if (startDate && !endDate){
+    } else if(startDate && !endDate){
       selectedRangeLabel.textContent = `${toISO(startDate)} → —`;
       label.textContent = `${toISO(startDate)} —`;
       selectedDaysSummary.textContent = `Выберите конечную дату`;
@@ -529,9 +679,11 @@ fetchAllHistory();
     }
   }
 
-  document.addEventListener('click', (e) => {
-    if (!root.contains(e.target)) {
-      hideDropdown();
+  // закрытие при клике вне
+  document.addEventListener('click', (e)=>{
+    if(!root.contains(e.target)){
+      dropdown.classList.add('hidden');
+      chevron.style.transform = '';
     }
   });
 
@@ -539,6 +691,7 @@ fetchAllHistory();
   updateLabels();
 
 })();
+
 
 </script>
 </body>
