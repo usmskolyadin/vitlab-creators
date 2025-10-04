@@ -150,8 +150,16 @@ def update_all_platforms(blogger):
     update_instagram_stats(blogger)
 
 from django.db.models import Q
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from django.core.cache import cache
+from django.http import JsonResponse
+from django.db.models import Q
+from .models import Blogger, SocialStats
+from .utils import update_all_platforms
+import json
 
-
+@cache_page(60 * 5)
 def bloggers_list(request):
     data = []
     platforms = ["youtube", "tiktok", "vk", "instagram"]
@@ -161,11 +169,15 @@ def bloggers_list(request):
     date_from = request.GET.get("date_from")
     date_to = request.GET.get("date_to")
 
+    cache_key = f"bloggers_list:{json.dumps(names)}:{json.dumps(blogger_ids)}:{date_from}:{date_to}"
+    cached_data = cache.get(cache_key)
+    if cached_data:
+        return JsonResponse(cached_data, safe=False)
+    
     bloggers = Blogger.objects.all()
 
     combined_q = Q()
-
-    # Фильтр по именам
+    
     if names:
         for name in names:
             words = name.strip().split()
@@ -217,7 +229,7 @@ def bloggers_list(request):
             "telegram_url": b.telegram_url,
             "stats": stats_dict,
         })
-
+    cache.set(cache_key, data, 3600)
     return JsonResponse(data, safe=False)
 
 def stats_summary(request):
