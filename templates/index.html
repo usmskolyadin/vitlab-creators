@@ -12,11 +12,13 @@
       body { font-family: "Montserrat", sans-serif; }
     </style>
   </head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <body class="bg-[#f0fbff] min-h-screen flex">
 
   <!-- HEADER -->
 
-  <aside class="w-28  bg-white border-r border-[#E5E7EB] flex flex-col items-center py-6 space-y-4">
+  <aside class="w-28 lg:block hidden bg-white border-r border-[#E5E7EB] flex flex-col items-center py-6 space-y-4">
     <!-- Иконка 1: Статистика -->
     <a href="/" class="flex flex-col items-center p-2 group border-b border-gray-400 pb-4">
         <svg class="h-6 w-6 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" role="img" aria-labelledby="analyticsTitle" xmlns="http://www.w3.org/2000/svg">
@@ -55,7 +57,7 @@
         </path>
       </svg>
     </div>
-  <section class="grid grid-cols-1 md:grid-cols-5 gap-6">
+  <section class="grid grid-cols-2 md:grid-cols-5 gap-6">
     <div class="bg-white p-2 py-6 rounded-2xl border border-[#E5E7EB] text-center">
       <p class="text-[#6B7280] font-medium text-md">Всего подписчиков</p>
       <h2 class="text-2xl font-bold text-[#111827]" id="totalSubscribers">0</h2>
@@ -346,7 +348,7 @@ function renderBloggers() {
     }
 
     const statsSummary = `
-      <div class="grid grid-cols-5 gap-4 text-center text-sm">
+      <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 text-center text-sm">
         <div class="p-2 rounded-2xl">
           <p class="text-[10px] uppercase text-[#6B7280] font-medium">Подписчики</p> 
           <p class="font-bold  text-black">${totalSubscribers}</p>
@@ -375,7 +377,7 @@ function renderBloggers() {
     div.className = "bg-white  border border-[#E5E7EB] p-4 transition hover:bg-gray-100 rounded-3xl  hover:-md transition";
 
     div.innerHTML = `
-      <div class="flex items-center justify-between gap-4 cursor-pointer blogger-header">
+      <div class="lg:flex items-center justify-between gap-4 cursor-pointer blogger-header">
         <div class="flex items-center gap-4">
           ${avatar} 
           <div class=" ">
@@ -426,12 +428,12 @@ function showBloggerStats(blogger, container) {
   const header = document.createElement("div");
   header.className = "grid grid-cols-6 gap-4 font-medium text-gray-100 p-3 pb-2 mb-2";
   header.innerHTML = `
-    <div class="text-[#6B7280] text-center">📱 Соц. сеть</div>
-    <div class="text-[#6B7280] text-center">📊 Подписчики</div>
-    <div class="text-[#6B7280] text-center">📷 Просмотры</div>
-    <div class="text-[#6B7280] text-center">📈 Видео</div>
-    <div class="text-[#6B7280] text-center">♥️ Лайки</div>
-    <div class="text-[#6B7280] text-center">💬 Комментарии</div>
+    <div class="text-[#6B7280] text-xs lg:text-lg text-center">📱<span class="lg:block hidden"> Соц. сеть</span></div>
+    <div class="text-[#6B7280] text-xs lg:text-lg text-center">📊<span class="lg:block hidden"> Подписчики</span></div>
+    <div class="text-[#6B7280] text-xs lg:text-lg text-center">📷<span class="lg:block hidden"> Просмотры</span></div>
+    <div class="text-[#6B7280] text-xs lg:text-lg text-center">📈<span class="lg:block hidden"> Видео</span></div>
+    <div class="text-[#6B7280] text-xs lg:text-lg text-center">♥️<span class="lg:block hidden"> Лайки</span></div>
+    <div class="text-[#6B7280] text-xs lg:text-lg text-center">💬<span class="lg:block hidden"> Комментарии</span></div>
   `;
   container.appendChild(header);
 
@@ -439,17 +441,17 @@ function showBloggerStats(blogger, container) {
     const row = document.createElement("div");
     row.className = "grid grid-cols-6 gap-4 items-center bg-gray-[#F9FAFB] p-2 rounded-xl  mb-2";
     row.innerHTML = `
-      <div class="font-bold  p-3 mr-2 text-gray-800 flex items-center">
+      <div class="font-boldtext-xs lg:text-lg  p-3 mr-2 text-gray-800 flex items-center">
         <a href="${stats.url || '#'}" target="_blank" class="flex hover:text-blue-500 transition items-center gap-2">
           ${getPlatformIcon(platform)}
-          ${platform.toUpperCase()}
+          <span class="lg:block hidden">${platform.toUpperCase()}</span>
         </a>
       </div>
-      <div class="text-center text-lg font-medium">${stats.subscribers}</div>
-      <div class="text-center text-lg font-medium">${stats.views}</div>
-      <div class="text-center text-lg font-medium">${stats.videos}</div>
-      <div class="text-center text-lg font-medium">${stats.likes}</div>
-      <div class="text-center text-lg font-medium">${stats.comments}</div>
+      <div class="text-center text-xs lg:text-lg font-medium">${stats.subscribers}</div>
+      <div class="text-center text-xs lg:text-lg font-medium">${stats.views}</div>
+      <div class="text-center text-xs lg:text-lg font-medium">${stats.videos}</div>
+      <div class="text-center text-xs lg:text-lg font-medium">${stats.likes}</div>
+      <div class="text-center text-xs lg:text-lg font-medium">${stats.comments}</div>
     `;
     container.appendChild(row);
   }
