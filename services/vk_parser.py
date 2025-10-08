@@ -90,5 +90,5 @@ def get_vk_stats(profile_url: str) -> dict:
 
     return stats
 
-profile_link = "https://vk.com/id1073025390"
-print(get_vk_stats(profile_link))
+# profile_link = "https://vk.com/id1073025390"
+# print(get_vk_stats(profile_link))

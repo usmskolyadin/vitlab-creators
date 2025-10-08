@@ -332,11 +332,9 @@ from django.http import JsonResponse
 from django.db.models.functions import Concat
 
 def all_bloggers_history(request):
-    from django.db.models import Q
-    from django.db.models.functions import Concat
-    from django.db.models import Value, CharField
+    from django.db.models import Q, Value, CharField, Max
+    from django.db.models.functions import Concat, TruncDate
 
-    # Получаем фильтры
     name_filter = [n.strip() for n in request.GET.getlist("name") if n.strip()]
     id_filter = [i.strip() for i in request.GET.getlist("blogger_id") if i.strip()]
     date_from = request.GET.get("date_from")
@@ -347,13 +345,7 @@ def all_bloggers_history(request):
     if name_filter:
         q = Q()
         for n in name_filter:
-            q |= Q(
-                first_name__icontains=n
-            ) | Q(
-                last_name__icontains=n
-            ) | Q(
-                concat_name__icontains=n  
-            )
+            q |= Q(first_name__icontains=n) | Q(last_name__icontains=n) | Q(concat_name__icontains=n)
         bloggers_qs = bloggers_qs.annotate(
             concat_name=Concat('first_name', Value(' '), 'last_name', output_field=CharField())
         ).filter(q)
@@ -370,7 +362,14 @@ def all_bloggers_history(request):
 
     stats = (
         stats.annotate(day=TruncDate("parsed_at"))
-             .values("day", "blogger__id", "blogger__first_name", "blogger__last_name", "platform")
+             .values(
+                 "day",
+                 "blogger__id",
+                 "blogger__first_name",
+                 "blogger__last_name",
+                 "blogger__blogger_id",  # добавили это
+                 "platform",
+             )
              .annotate(
                  likes=Max("likes"),
                  comments=Max("comments"),
@@ -386,8 +385,9 @@ def all_bloggers_history(request):
         key = (row["day"], row["blogger__id"])
         if key not in history_dict:
             history_dict[key] = {
-                "day": row["day"].strftime("%Y-%m-%d"),
+                "day": row["day"].strftime("%d-%m-%Y"),
                 "blogger_id": row["blogger__id"],
+                "blogger_n": row["blogger__blogger_id"],  # вот это теперь правильное поле
                 "name": f'{row["blogger__first_name"]} {row["blogger__last_name"]}',
                 "stats": {}
             }
@@ -421,6 +421,7 @@ def all_bloggers_history(request):
         final_history.append({
             "day": day_record["day"],
             "blogger_id": blogger_id,
+            "blogger_n": day_record["blogger_n"], 
             "name": day_record["name"],
             "stats": delta_stats
         })

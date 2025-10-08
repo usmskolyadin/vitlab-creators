@@ -17,8 +17,7 @@
   <!-- HEADER -->
 
   <aside class="w-28  bg-white border-r border-[#E5E7EB] flex flex-col items-center py-6 space-y-4">
-    <!-- Иконка 1: Статистика -->
-    <a href="/" class="flex flex-col items-center p-2 group border-b border-gray-400 mx-2 pb-4">
+    <a href="/" class="flex flex-col items-center p-2 group border-b border-gray-400 pb-4">
         <svg class="h-6 w-6 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" role="img" aria-labelledby="analyticsTitle" xmlns="http://www.w3.org/2000/svg">
         <title id="analyticsTitle">Аналитика</title>
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M3 3v18h18" />
@@ -26,16 +25,19 @@
         <rect x="11" y="6" width="2.5" height="12" rx="0.4" ry="0.4" fill="currentColor" />
         <rect x="16" y="2" width="2.5" height="16" rx="0.4" ry="0.4" fill="currentColor" />
         </svg>
-
-      <span class="text-xs text-gray-500 mt-1 group-hover:text-blue-600">Аналитика</span>
+      <span class="text-md text-gray-500 mt-1 group-hover:text-blue-600">Аналитика</span>
     </a>
-
-    <!-- Иконка 2: Календарь -->
     <a href="/daily" class="flex flex-col items-center p-2 group border-b border-gray-400 mx-2 pb-4">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-500 group-hover:text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
       </svg>
-      <span class="text-xs text-gray-500 mt-1 group-hover:text-blue-600 text-center">Аналитика по дням</span>
+      <span class="text-md text-gray-500 mt-1 group-hover:text-blue-600 text-center">Аналитика по дням</span>
+    </a>
+    <a href="/admin" class="flex flex-col items-center p-2 group border-b border-gray-400 mx-2 pb-4">
+      <svg class="w-6 h-6 text-gray-500" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#6a7282" fill-rule="evenodd" d="M10.0248,9.97521 L5.83008,14.1699 C4.72551,15.2745 2.93464,15.2745 1.83008,14.1699 C0.725505,13.0654 0.725506,11.2745 1.83008,10.1699 L6.02479,5.97521 C6.0084,5.81904 6,5.6605 6,5.5 C6,3.18096 7.7542,1.27164 10.008,1.02658 C10.1696,1.00901 10.3338,1 10.5,1 C11.1906,1 11.8448,1.15555 12.4295,1.43351 L10.2851,3.57797 C9.6993,4.16376 9.6993,5.11351 10.2851,5.69929 C10.8709,6.28508 11.8206,6.28508 12.4064,5.69929 L14.5564,3.54932 C14.8407,4.13945 15,4.80112 15,5.5 C15,5.65429 14.9922,5.80676 14.9771,5.95705 C14.748,8.22767 12.831,10 10.5,10 C10.3395,10 10.181,9.9916 10.0248,9.97521 Z M9.28499,7.88658 L4.41586,12.7557 C4.09234,13.0792 3.56781,13.0792 3.24429,12.7557 C2.92077,12.4322 2.92077,11.9077 3.24429,11.5841 L8.11342,6.715 L9.28499,7.88658 Z"/>
+      </svg>
+      <span class="text-md text-gray-500 mt-1 group-hover:text-blue-600 text-center">Админ-панель </span>
     </a>
   </aside>
 
@@ -140,12 +142,16 @@
             </div>
           </div>
         </div>
-
-          <button id="resetFiltersBtn" type="button" 
-                class="md:col-span-4 w-full mb-6 bg-gray-200 text-gray-700 px-4 py-3 rounded-2xl transition hover:bg-gray-300">
-           Сбросить все фильтры
+        <div class="flex items-center w-full">
+          <button id="applyBtn" type="button" 
+            class=" mr-2 md:col-span-4 w-full bg-blue-500 text-white px-4 py-3 rounded-2xl transition hover:bg-blue-300">
+            Применить
           </button>
-
+          <button id="resetFiltersBtn" type="button" 
+            class=" md:col-span-4 w-full bg-gray-200 text-gray-700 px-4 py-3 rounded-2xl transition hover:bg-gray-300">
+            Сбросить все фильтры
+          </button>
+        </div>
         </form>
       </div>
         <div id="bloggerList" class="grid grid-cols-1 gap-6"></div>
@@ -308,7 +314,7 @@ function renderHistory(history) {
   html += `</tr></thead><tbody>`;
 
   history.forEach(row => {
-    html += `<tr class="border-b"><td class="p-2 text-center">${row.day}</td><td class="p-2 text-center">${row.name}</td><td class="p-2 text-center">${row.blogger_id}</td>`;
+    html += `<tr class="border-b"><td class="p-2 text-center">${row.day}</td><td class="p-2 text-center">${row.name}</td><td class="p-2 text-center">${row.blogger_n}</td>`;
 
     platforms.forEach(p => {
       if (row.stats && row.stats[p]) {
@@ -489,15 +495,15 @@ resetFiltersBtn.addEventListener('click', () => {
 
 </script>
 
+
 <script>
-(function(){
+document.addEventListener("DOMContentLoaded", () => {
   const pad = v => v.toString().padStart(2, '0');
   const toISO = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 
   const root = document.getElementById('datePickerRoot');
   const toggle = document.getElementById('datePickerToggle');
   const dropdown = document.getElementById('datePickerDropdown');
-  const chevron = document.getElementById('datePickerChevron');
   const monthLabel = document.getElementById('monthLabel');
   const grid = document.getElementById('calendarGrid');
   const prevBtn = document.getElementById('prevMonth');
@@ -506,93 +512,23 @@ resetFiltersBtn.addEventListener('click', () => {
   const selectedDaysSummary = document.getElementById('selectedDaysSummary');
   const applyBtn = document.getElementById('applyDateBtn');
   const cancelBtn = document.getElementById('cancelDateBtn');
-  const clearBtn = document.getElementById('dateClearBtn');
   const label = document.getElementById('datePickerLabel');
   const quicks = document.querySelectorAll('.quickPreset');
-  dropdown.addEventListener('click', e => {
-    e.stopPropagation();
-  });
-  let viewDate = new Date(); 
+
+  let viewDate = new Date();
   viewDate.setDate(1);
-  let startDate = null;
-  let endDate = null;
+  window.startDate = null;
+  window.endDate = null;
 
-  // открытие/закрытие дропдауна
-  toggle.addEventListener('click', () => {
-    dropdown.classList.toggle('hidden');
-    chevron.style.transform = dropdown.classList.contains('hidden') ? '' : 'rotate(180deg)';
-    if(!dropdown.classList.contains('hidden')) renderCalendar();
-  });
+  const startOfDay = d => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const isSameDate = (a,b) => a && b && a.toDateString() === b.toDateString();
+  const isInRange = (d,a,b) => a && b && d > a && d < b;
 
-  cancelBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    dropdown.classList.add('hidden');
-    chevron.style.transform = '';
-  });
-
-  clearBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    startDate = null; endDate = null;
-    updateLabels();
-    clearBtn.classList.add('hidden');
-  });
-
-  // переключение месяца без закрытия меню
-  prevBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    viewDate.setMonth(viewDate.getMonth() - 1);
-    renderCalendar();
-  });
-
-  nextBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    viewDate.setMonth(viewDate.getMonth() + 1);
-    renderCalendar();
-  });
-
-  // быстрые кнопки
-  quicks.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const days = parseInt(btn.dataset.days, 10);
-      const today = new Date();
-      const from = new Date();
-      from.setDate(today.getDate() - (days - 0));
-      startDate = from;
-      endDate = today;
-      viewDate = new Date(today.getFullYear(), today.getMonth(), 1);
-      renderCalendar();
-      updateLabels();
-    });
-  });
-
-  // применение фильтров
-  applyBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    if (!startDate || !endDate) return;
-    const filters = {};
-    filters.date_from = toISO(startDate);
-    filters.date_to = toISO(endDate);
-
-    const name = document.getElementById('filterName')?.value || '';
-    const bloggerId = document.getElementById('filterId')?.value || '';
-    if(name) filters.name = name;
-    if(bloggerId) filters.blogger_id = bloggerId;
-
-    if(typeof fetchData === 'function'){
-      fetchData(filters);
-    }
-    updateLabels();
-    dropdown.classList.add('hidden');
-    chevron.style.transform = '';
-  });
-
-  // рендер календаря
-  function renderCalendar(){
+  function renderCalendar() {
     const monthNames = ['Янв','Фев','Мар','Апр','Май','Июн','Июл','Авг','Сен','Окт','Ноя','Дек'];
     monthLabel.textContent = `${monthNames[viewDate.getMonth()]} ${viewDate.getFullYear()}`;
-
     grid.innerHTML = '';
+
     const weekDays = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
     weekDays.forEach(w => {
       const el = document.createElement('div');
@@ -603,96 +539,122 @@ resetFiltersBtn.addEventListener('click', () => {
 
     const firstDay = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1);
     const lastDay = new Date(viewDate.getFullYear(), viewDate.getMonth()+1, 0);
-    const startOffset = (firstDay.getDay() + 6) % 7;
+    const offset = (firstDay.getDay() + 6) % 7;
 
-    for (let i=0;i<startOffset;i++){
-      const cell = document.createElement('div');
-      cell.className = 'text-sm py-2';
-      grid.appendChild(cell);
-    }
+    for (let i = 0; i < offset; i++) grid.appendChild(document.createElement('div'));
 
-    for(let d=1; d<=lastDay.getDate(); d++){
-      const dt = new Date(viewDate.getFullYear(), viewDate.getMonth(), d);
-      const cell = document.createElement('button');
-      cell.type = "button";
-      cell.className = 'text-sm py-2 rounded-lg focus:outline-none hover:ring-1 hover:ring-[#56a7ff]';
-      cell.textContent = d;
+    for (let d = 1; d <= lastDay.getDate(); d++) {
+      const date = new Date(viewDate.getFullYear(), viewDate.getMonth(), d);
+      const btn = document.createElement('button');
+      btn.type = "button";
+      btn.textContent = d;
+      btn.className = 'text-sm py-2 rounded-lg hover:bg-gray-100 transition-all';
 
       const today = new Date();
-      if(dt.toDateString() === today.toDateString()){
-        cell.classList.add('ring-1','ring-[#56a7ff]','font-semibold');
-      }
-      if(isSameDate(dt, startDate) || isSameDate(dt, endDate)){
-        cell.classList.add('bg-[#56a7ff]','text-white');
-      } else if(isInRange(dt, startDate, endDate)){
-        cell.classList.add('bg-[#E6F0FF]','text-[#0B69CC]');
-      } else {
-        cell.classList.add('hover:bg-gray-100');
-      }
+      if (isSameDate(date, today)) btn.classList.add('ring-1','ring-[#56a7ff]');
 
-      cell.addEventListener('click', (e)=>{
+      if (isSameDate(date, startDate) || isSameDate(date, endDate))
+        btn.classList.add('bg-[#56a7ff]','text-white','font-semibold');
+      else if (isInRange(date, startDate, endDate))
+        btn.classList.add('bg-[#E6F0FF]','text-[#0B69CC]');
+
+      btn.addEventListener('click', e => {
         e.preventDefault();
-        e.stopPropagation();
-        if(!startDate || (startDate && endDate)){
-          startDate = dt; endDate = null;
+        e.stopPropagation(); // важно! предотвращает закрытие окна
+
+        if (!startDate || (startDate && endDate)) {
+          startDate = date;
+          endDate = null;
         } else {
-          if(dt < startDate){ endDate = startDate; startDate = dt; } 
-          else endDate = dt;
+          if (date < startDate) [startDate, endDate] = [date, startDate];
+          else endDate = date;
         }
+
         renderCalendar();
         updateLabels();
       });
 
-      grid.appendChild(cell);
+      grid.appendChild(btn);
     }
   }
 
-  function isSameDate(a,b){
-    if(!a||!b) return false;
-    return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
-  }
-  function isInRange(day, a, b){
-    if(!a||!b) return false;
-    const da=startOfDay(a).getTime();
-    const db=startOfDay(b).getTime();
-    const dd=startOfDay(day).getTime();
-    return dd>da && dd<db;
-  }
-  function startOfDay(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
-
-  function updateLabels(){
-    if(startDate && endDate){
+  function updateLabels() {
+    if (startDate && endDate) {
       selectedRangeLabel.textContent = `${toISO(startDate)} → ${toISO(endDate)}`;
       label.textContent = `${toISO(startDate)} — ${toISO(endDate)}`;
-      selectedDaysSummary.textContent = `${Math.ceil((startOfDay(endDate)-startOfDay(startDate))/(1000*60*60*24))+1} дн.`;
-      clearBtn.classList.remove('hidden');
-    } else if(startDate && !endDate){
+      const diffDays = Math.ceil((startOfDay(endDate) - startOfDay(startDate)) / (1000*60*60*24)) + 1;
+      selectedDaysSummary.textContent = `${diffDays} дн.`;
+    } else if (startDate && !endDate) {
       selectedRangeLabel.textContent = `${toISO(startDate)} → —`;
       label.textContent = `${toISO(startDate)} —`;
-      selectedDaysSummary.textContent = `Выберите конечную дату`;
-      clearBtn.classList.remove('hidden');
+      selectedDaysSummary.textContent = 'Выберите конечную дату';
     } else {
       selectedRangeLabel.textContent = '—';
       label.textContent = 'Не выбран';
       selectedDaysSummary.textContent = '';
-      clearBtn.classList.add('hidden');
     }
   }
 
-  // закрытие при клике вне
-  document.addEventListener('click', (e)=>{
-    if(!root.contains(e.target)){
+  toggle.addEventListener('click', e => {
+    e.stopPropagation();
+    dropdown.classList.toggle('hidden');
+    if (!dropdown.classList.contains('hidden')) renderCalendar();
+  });
+
+  cancelBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    dropdown.classList.add('hidden');
+  });
+
+  prevBtn.addEventListener('click', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    viewDate.setMonth(viewDate.getMonth() - 1);
+    renderCalendar();
+  });
+
+  nextBtn.addEventListener('click', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    viewDate.setMonth(viewDate.getMonth() + 1);
+    renderCalendar();
+  });
+
+  quicks.forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      const days = parseInt(btn.dataset.days, 10);
+      const today = new Date();
+      const from = new Date();
+      from.setDate(today.getDate() - days);
+      startDate = from;
+      endDate = today;
+      viewDate = new Date(today.getFullYear(), today.getMonth(), 1);
+      renderCalendar();
+      updateLabels();
+    });
+  });
+
+  applyBtn.addEventListener('click', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!startDate || !endDate) return;
+    const filters = { date_from: toISO(startDate), date_to: toISO(endDate) };
+    if (typeof fetchData === 'function') fetchData(filters);
+    dropdown.classList.add('hidden');
+  });
+
+  document.addEventListener('click', e => {
+    if (!root.contains(e.target)) {
       dropdown.classList.add('hidden');
-      chevron.style.transform = '';
     }
   });
 
   renderCalendar();
   updateLabels();
-
-})();
-
-
+});
 </script>
+
 </body>
 </html>
