@@ -178,7 +178,7 @@
           </button>
           <button id="resetFiltersBtn" type="button" 
             class=" md:col-span-4 w-full bg-gray-200 text-gray-700 px-4 py-3 rounded-2xl transition hover:bg-gray-300">
-            Сбросить все фильтры
+            <a href="/">Сбросить все фильтры</a>
           </button>
         </div>
 
@@ -617,7 +617,7 @@ function showSuggestions(data) {
 
   data.forEach(b => {
     const li = document.createElement("li");
-    li.textContent = b.name;
+    li.textContent = `${b.name} • Creator № ${b.blogger_id}`;
     li.className = "px-3 py-2 hover:bg-gray-100 cursor-pointer";
     li.addEventListener("click", () => {
       if (!selectedBloggers.includes(b.name)) {

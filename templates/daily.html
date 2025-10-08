@@ -149,7 +149,7 @@
           </button>
           <button id="resetFiltersBtn" type="button" 
             class=" md:col-span-4 w-full bg-gray-200 text-gray-700 px-4 py-3 rounded-2xl transition hover:bg-gray-300">
-            Сбросить все фильтры
+            <a href="/daily">Сбросить все фильтры</a>
           </button>
         </div>
         </form>
@@ -343,6 +343,8 @@ fetchData();
 <script>
 let selectedBloggers = []; // выбранные имена
 let selectedIds = [];      // выбранные ID
+let allBloggers = []; // храним всех блогеров
+
 
 const filterNameInput = document.getElementById("filterName");
 const filterIdInput = document.getElementById("filterId");
@@ -469,13 +471,64 @@ filterIdInput.addEventListener("keydown", (e) => {
   }
 });
 
+filterNameInput.addEventListener("focus", () => {
+  if (allBloggers.length) {
+    showSuggestions(allBloggers);
+  } else {
+    fetchAllBloggers().then(() => showSuggestions(allBloggers));
+  }
+});
+
 // Клик вне списка скрывает suggestions
 document.addEventListener("click", (e) => {
   if (!filterNameInput.contains(e.target) && !suggestionsList.contains(e.target)) {
     suggestionsList.classList.add("hidden");
   }
 });
+async function fetchAllBloggers() {
+  try {
+    const res = await fetch(`/bloggers_list/`);
+    if (!res.ok) throw new Error("Ошибка загрузки всех блогеров");
+    allBloggers = await res.json();
+  } catch (e) {
+    console.error(e);
+  }
+}
+function showSuggestions(data) {
+  suggestionsList.innerHTML = "";
+  if (!data.length) {
+    suggestionsList.classList.add("hidden");
+    return;
+  }
 
+  data.forEach(b => {
+    const li = document.createElement("li");
+    li.textContent = `${b.name} • Creator № ${b.blogger_id}`;
+    li.className = "px-3 py-2 hover:bg-gray-100 cursor-pointer";
+    li.addEventListener("click", () => {
+      if (!selectedBloggers.includes(b.name)) {
+        selectedBloggers.push(b.name);
+        renderSelectedTags();
+        applyFilters();
+      }
+      filterNameInput.value = "";
+      suggestionsList.classList.add("hidden");
+    });
+    suggestionsList.appendChild(li);
+  });
+  suggestionsList.classList.remove("hidden");
+}
+
+// При вводе текста фильтруем список
+filterNameInput.addEventListener("input", () => {
+  const query = filterNameInput.value.trim().toLowerCase();
+  if (!query) {
+    showSuggestions(allBloggers);
+    return;
+  }
+  const filtered = allBloggers.filter(b => b.name.toLowerCase().includes(query));
+  showSuggestions(filtered);
+});
 // Инициализация
 renderSelectedTags();
 const resetFiltersBtn = document.getElementById('resetFiltersBtn');
