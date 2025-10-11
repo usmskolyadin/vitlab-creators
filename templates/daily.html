@@ -70,7 +70,7 @@
               id="filterName"
               
               placeholder="Введите имя блогера"
-              class="bg-white p-6 text-[#6B7280] font-semibold border border-[#E5E7EB] rounded-2xl w-full"
+              class="bg-white h-14 p-6 text-[#6B7280] font-semibold border border-[#E5E7EB] rounded-2xl w-full"
               autocomplete="off"
             >
             <ul 
@@ -79,10 +79,10 @@
             ></ul>
 
           </div>
-          <input type="text" id="filterId" name="blogger_id" placeholder="Creator №" class="bg-white p-4 border text-[#6B7280] font-semibold border-[#E5E7EB] rounded-2xl w-full">
-        <div class="relative" id="datePickerRoot">
+          <input type="text" id="filterId" name="blogger_id" placeholder="Creator №" class="h-14 bg-white p-4 border text-[#6B7280] font-semibold border-[#E5E7EB] rounded-2xl w-full">
+        <div class="relative" id="datePickerRoot" class="h-14">
           <button id="datePickerToggle" type="button"
-                  class="flex items-center gap-2 bg-white p-4 border border-[#E5E7EB] rounded-2xl w-full justify-between">
+                  class="flex items-center gap-2 bg-white h-14 p-4 border border-[#E5E7EB] rounded-2xl w-full justify-between">
             <div class="flex items-center gap-3 text-[#6B7280]">
               <svg class="w-5 h-5 text-[#6B7280]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M7 10h5v5H7z" opacity="0.15"/>
@@ -143,12 +143,9 @@
           </div>
         </div>
         <div class="flex items-center w-full">
-          <button id="applyBtn" type="button" 
-            class=" mr-2 md:col-span-4 w-full bg-blue-500 text-white px-4 py-3 rounded-2xl transition hover:bg-blue-300">
-            Применить
-          </button>
+
           <button id="resetFiltersBtn" type="button" 
-            class=" md:col-span-4 w-full bg-gray-200 text-gray-700 px-4 py-3 rounded-2xl transition hover:bg-gray-300">
+            class="h-14 md:col-span-4 w-full bg-gray-200 text-gray-700 px-4 py-3 rounded-2xl transition hover:bg-gray-300">
             <a href="/daily">Сбросить все фильтры</a>
           </button>
         </div>
@@ -321,7 +318,7 @@ function renderHistory(history) {
         const s = row.stats[p];
         html += `<td class="p-2 text-sm text-center">
           <div>Видео: ${s.videos}</div>
-          <div>Просмотры: ${s.views}</div>
+          <div>Просмотры: ${s.views.toLocaleString("ru-RU")}</div>
         </td>`;
       } else {
         html += `<td class="p-2 text-center">-</td>`;
@@ -548,11 +545,11 @@ resetFiltersBtn.addEventListener('click', () => {
 
 </script>
 
-
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const pad = v => v.toString().padStart(2, '0');
-  const toISO = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  // ✅ Меняем формат ISO на русский: дд.мм.гггг
+  const toRU = d => `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
 
   const root = document.getElementById('datePickerRoot');
   const toggle = document.getElementById('datePickerToggle');
@@ -613,7 +610,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       btn.addEventListener('click', e => {
         e.preventDefault();
-        e.stopPropagation(); // важно! предотвращает закрытие окна
+        e.stopPropagation();
 
         if (!startDate || (startDate && endDate)) {
           startDate = date;
@@ -633,13 +630,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateLabels() {
     if (startDate && endDate) {
-      selectedRangeLabel.textContent = `${toISO(startDate)} → ${toISO(endDate)}`;
-      label.textContent = `${toISO(startDate)} — ${toISO(endDate)}`;
+      selectedRangeLabel.textContent = `${toRU(startDate)} → ${toRU(endDate)}`;
+      label.textContent = `${toRU(startDate)} — ${toRU(endDate)}`;
       const diffDays = Math.ceil((startOfDay(endDate) - startOfDay(startDate)) / (1000*60*60*24)) + 1;
       selectedDaysSummary.textContent = `${diffDays} дн.`;
     } else if (startDate && !endDate) {
-      selectedRangeLabel.textContent = `${toISO(startDate)} → —`;
-      label.textContent = `${toISO(startDate)} —`;
+      selectedRangeLabel.textContent = `${toRU(startDate)} → —`;
+      label.textContent = `${toRU(startDate)} —`;
       selectedDaysSummary.textContent = 'Выберите конечную дату';
     } else {
       selectedRangeLabel.textContent = '—';
@@ -693,7 +690,7 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     e.stopPropagation();
     if (!startDate || !endDate) return;
-    const filters = { date_from: toISO(startDate), date_to: toISO(endDate) };
+    const filters = { date_from: toRU(startDate), date_to: toRU(endDate) }; // ✅ тоже в русском формате
     if (typeof fetchData === 'function') fetchData(filters);
     dropdown.classList.add('hidden');
   });
@@ -708,6 +705,7 @@ document.addEventListener("DOMContentLoaded", () => {
   updateLabels();
 });
 </script>
+
 
 </body>
 </html>

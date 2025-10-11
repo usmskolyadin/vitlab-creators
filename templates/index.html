@@ -99,7 +99,7 @@
               type="text" 
               id="filterName"
               placeholder="Введите имя блогера"
-              class="bg-white p-6 text-[#6B7280] font-semibold border border-[#E5E7EB] rounded-2xl w-full"
+              class="h-14 bg-white p-6 text-[#6B7280] font-semibold border border-[#E5E7EB] rounded-2xl w-full"
               autocomplete="off"
             >
             <ul 
@@ -108,10 +108,10 @@
             ></ul>
 
           </div>
-          <input type="text" id="filterId" placeholder="Creator №" class="bg-white p-4 border text-[#6B7280] font-semibold border-[#E5E7EB] rounded-2xl w-full">
+          <input type="text" id="filterId" placeholder="Creator №" class="h-14 bg-white p-4 border text-[#6B7280] font-semibold border-[#E5E7EB] rounded-2xl w-full">
         <div class="relative" id="datePickerRoot">
           <button id="datePickerToggle" type="button"
-                  class="flex items-center gap-2 bg-white p-4 border border-[#E5E7EB] rounded-2xl w-full justify-between">
+                  class="flex items-center gap-2 h-14 bg-white p-4 border border-[#E5E7EB] rounded-2xl w-full justify-between">
             <div class="flex items-center gap-3 text-[#6B7280]">
               <svg class="w-5 h-5 text-[#6B7280]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M7 10h5v5H7z" opacity="0.15"/>
@@ -172,10 +172,7 @@
           </div>
         </div>
         <div class="flex items-center w-full">
-          <button id="applyBtn" type="button" 
-            class=" mr-2 md:col-span-4 w-full bg-blue-500 text-white px-4 py-3 rounded-2xl transition hover:bg-blue-300">
-            Применить
-          </button>
+
           <button id="resetFiltersBtn" type="button" 
             class=" md:col-span-4 w-full bg-gray-200 text-gray-700 px-4 py-3 rounded-2xl transition hover:bg-gray-300">
             <a href="/">Сбросить все фильтры</a>
@@ -188,8 +185,6 @@
       <div id="bloggerList" class="grid grid-cols-1 gap-6"></div>
       <section id="bloggerStatsDetail" class="space-y-4"></section>
     </section>
-
-    <!-- Диаграмма -->
 
   </div>
 
@@ -329,13 +324,13 @@ function calcTotals() {
         totalSubscribers += s.subscribers || 0;
         }
     });
-    document.getElementById("totalLikes").textContent = totalLikes;
-    document.getElementById("totalComments").textContent = totalComments;
-    document.getElementById("totalVideos").textContent = totalVideos;
-    document.getElementById("totalViews").textContent = totalViews;
-    document.getElementById("totalSubscribers").textContent = totalSubscribers;
-    }
+    document.getElementById("totalLikes").textContent = totalLikes.toLocaleString("ru-RU");
+    document.getElementById("totalComments").textContent = totalComments.toLocaleString("ru-RU");
+    document.getElementById("totalVideos").textContent = totalVideos.toLocaleString("ru-RU");
+    document.getElementById("totalViews").textContent = totalViews.toLocaleString("ru-RU");
+    document.getElementById("totalSubscribers").textContent = totalSubscribers.toLocaleString("ru-RU");
 
+    }
 
 function renderBloggers() {
   const container = document.getElementById("bloggerList");
@@ -345,12 +340,9 @@ function renderBloggers() {
     const avatar = b.avatar_url
       ? `<img src="${b.avatar_url}" class="w-16 h-16 rounded-full object-cover">`
       : `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="64" height="64">
-          <!-- фон -->
           <circle cx="12" cy="12" r="12" fill="#f5eee8"/>
-          <!-- силуэт -->
           <path fill="#e4ccb4" d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
-        </svg>
-        `;
+        </svg>`;
 
     let totalLikes = 0, totalComments = 0, totalVideos = 0, totalViews = 0, totalSubscribers = 0;
     for (const s of Object.values(b.stats)) { 
@@ -365,56 +357,53 @@ function renderBloggers() {
       <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 text-center text-sm">
         <div class="p-2 rounded-2xl">
           <p class="text-[10px] uppercase text-[#6B7280] font-medium">Подписчики</p> 
-          <p class="font-bold  text-black">${totalSubscribers}</p>
+          <p class="font-bold text-black">${totalSubscribers.toLocaleString("ru-RU")}</p>
         </div>
         <div class="p-2 rounded-2xl">
           <p class="text-[10px] uppercase text-[#6B7280] font-medium">Просмотры</p>
-          <p class="font-bold  text-black">${totalViews}</p>
+          <p class="font-bold text-black">${totalViews.toLocaleString("ru-RU")}</p>
         </div>
         <div class="p-2 rounded-2xl">
           <p class="text-[10px] uppercase text-[#6B7280] font-medium">Видео</p>
-          <p class="font-bold  text-black">${totalVideos}</p>
+          <p class="font-bold text-black">${totalVideos.toLocaleString("ru-RU")}</p>
         </div>
         <div class="p-2 rounded-2xl">
           <p class="text-[10px] uppercase text-[#6B7280] font-medium">Лайки</p>
-          <p class="font-bold  text-black">${totalLikes}</p>
+          <p class="font-bold text-black">${totalLikes.toLocaleString("ru-RU")}</p>
         </div>
         <div class="p-2 rounded-2xl">
           <p class="text-[10px] uppercase text-[#6B7280] font-medium">Комментарии</p>
-          <p class="font-bold  text-black">${totalComments}</p>
+          <p class="font-bold text-black">${totalComments.toLocaleString("ru-RU")}</p>
         </div>
-
       </div>
     `;
 
     const div = document.createElement("div");
-    div.className = "bg-white  border border-[#E5E7EB] p-4 transition hover:bg-gray-100 rounded-3xl  hover:-md transition";
+    div.className = "bg-white border border-[#E5E7EB] p-4 rounded-3xl transition hover:bg-gray-100";
 
     div.innerHTML = `
       <div class="lg:flex items-center justify-between gap-4 cursor-pointer blogger-header">
         <div class="flex items-center gap-4">
-          ${avatar} 
-          <div class=" ">
-            <h3 class="flex items-center z-20 text-lg font-semibold text-gray-800">${b.name} • 
-              <a class="hover:scale-105" href="${b.telegram_url}">
-              <svg width="25px" height="25px" class="ml-2" viewBox="0 0 256 256" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMidYMid">
+          <!-- стрелка -->
+          <svg class="arrow-icon w-5 h-5 text-gray-500 transition-transform duration-300 rotate-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+          
+          ${avatar}
+
+          <div>
+            <h3 class="flex items-center z-20 text-lg font-semibold text-gray-800">
+              ${b.name} • 
+              <a class="hover:scale-105" target="_blank" href="${b.telegram_url}">
+                <svg width="25px" height="25px" class="ml-2" viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
                   <g>
-                      <path d="M128,0 C57.307,0 0,57.307 0,128 L0,128 C0,198.693 57.307,256 128,256 L128,256 C198.693,256 256,198.693 256,128 L256,128 C256,57.307 198.693,0 128,0 L128,0 Z" fill="#40B3E0">
-
-                  </path>
-                          <path d="M190.2826,73.6308 L167.4206,188.8978 C167.4206,188.8978 164.2236,196.8918 155.4306,193.0548 L102.6726,152.6068 L83.4886,143.3348 L51.1946,132.4628 C51.1946,132.4628 46.2386,130.7048 45.7586,126.8678 C45.2796,123.0308 51.3546,120.9528 51.3546,120.9528 L179.7306,70.5928 C179.7306,70.5928 190.2826,65.9568 190.2826,73.6308" fill="#FFFFFF">
-
-                  </path>
-                          <path d="M98.6178,187.6035 C98.6178,187.6035 97.0778,187.4595 95.1588,181.3835 C93.2408,175.3085 83.4888,143.3345 83.4888,143.3345 L161.0258,94.0945 C161.0258,94.0945 165.5028,91.3765 165.3428,94.0945 C165.3428,94.0945 166.1418,94.5735 163.7438,96.8115 C161.3458,99.0505 102.8328,151.6475 102.8328,151.6475" fill="#D2E5F1">
-
-                  </path>
-                          <path d="M122.9015,168.1154 L102.0335,187.1414 C102.0335,187.1414 100.4025,188.3794 98.6175,187.6034 L102.6135,152.2624" fill="#B5CFE4">
-
-                  </path>
+                    <path d="M128,0C57.307,0,0,57.307,0,128c0,70.693,57.307,128,128,128s128-57.307,128-128C256,57.307,198.693,0,128,0z" fill="#40B3E0"/>
+                    <path d="M190.283,73.631L167.421,188.898s-3.197,7.994-11.99,4.157l-52.758-40.448l-19.184-9.272l-32.294-10.872
+                      c0,0-4.956-1.758-5.436-5.595s6.075-5.915,6.075-5.915l128.376-50.36C179.73,70.593,190.283,65.957,190.283,73.631z" fill="#fff"/>
                   </g>
-              </svg>
+                </svg>
               </a>
-              </h3>
+            </h3>
             <h3 class="text-md font-medium text-[#636b80]">Creator № ${b.blogger_id}</h3>
           </div>
         </div>
@@ -423,19 +412,27 @@ function renderBloggers() {
       <div class="blogger-stats hidden mt-4"></div>
     `;
 
-    div.querySelector(".blogger-header").addEventListener("click", () => {
+    const header = div.querySelector(".blogger-header");
+    const arrowIcon = div.querySelector(".arrow-icon");
+
+    header.addEventListener("click", () => {
       const statsContainer = div.querySelector(".blogger-stats");
-      if (statsContainer.classList.contains("hidden")) {
-        showBloggerStats(b, statsContainer);
-      } else {
+      const expanded = !statsContainer.classList.contains("hidden");
+
+      if (expanded) {
         statsContainer.classList.add("hidden");
         statsContainer.innerHTML = "";
+        arrowIcon.classList.remove("rotate-90");
+      } else {
+        showBloggerStats(b, statsContainer);
+        arrowIcon.classList.add("rotate-90");
       }
     });
 
     container.appendChild(div);
   });
 }
+
 function showBloggerStats(blogger, container) {
   container.innerHTML = "";
   showBloggerHistory(blogger.id, container);
@@ -456,7 +453,7 @@ function showBloggerStats(blogger, container) {
     row.className = "grid grid-cols-6 gap-4 items-center bg-gray-[#F9FAFB] p-2 rounded-xl  mb-2";
     row.innerHTML = `
       <div class="font-boldtext-xs lg:text-lg  p-3 mr-2 text-gray-800 flex items-center">
-        <a href="${stats.url || '#'}" target="_blank" class="flex hover:text-blue-500 transition items-center gap-2">
+        <a href="${stats.url || '#'}" target="_blank" class="flex font-bold hover:text-blue-500 transition items-center gap-2">
           ${getPlatformIcon(platform)}
           <span class="lg:block hidden">${platform.toUpperCase()}</span>
         </a>
@@ -668,7 +665,6 @@ filterNameInput.addEventListener("keydown", (e) => {
   }
 });
 
-// Ввод ID
 filterIdInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") {
     e.preventDefault();
@@ -711,7 +707,8 @@ resetFiltersBtn.addEventListener('click', () => {
 <script>
 document.addEventListener("DOMContentLoaded", () => {
   const pad = v => v.toString().padStart(2, '0');
-  const toISO = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  // ✅ формат даты: день.месяц.год
+  const toRU = d => `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
 
   const root = document.getElementById('datePickerRoot');
   const toggle = document.getElementById('datePickerToggle');
@@ -772,7 +769,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       btn.addEventListener('click', e => {
         e.preventDefault();
-        e.stopPropagation(); // важно! предотвращает закрытие окна
+        e.stopPropagation();
 
         if (!startDate || (startDate && endDate)) {
           startDate = date;
@@ -792,13 +789,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateLabels() {
     if (startDate && endDate) {
-      selectedRangeLabel.textContent = `${toISO(startDate)} → ${toISO(endDate)}`;
-      label.textContent = `${toISO(startDate)} — ${toISO(endDate)}`;
+      selectedRangeLabel.textContent = `${toRU(startDate)} → ${toRU(endDate)}`;
+      label.textContent = `${toRU(startDate)} — ${toRU(endDate)}`;
       const diffDays = Math.ceil((startOfDay(endDate) - startOfDay(startDate)) / (1000*60*60*24)) + 1;
       selectedDaysSummary.textContent = `${diffDays} дн.`;
     } else if (startDate && !endDate) {
-      selectedRangeLabel.textContent = `${toISO(startDate)} → —`;
-      label.textContent = `${toISO(startDate)} —`;
+      selectedRangeLabel.textContent = `${toRU(startDate)} → —`;
+      label.textContent = `${toRU(startDate)} —`;
       selectedDaysSummary.textContent = 'Выберите конечную дату';
     } else {
       selectedRangeLabel.textContent = '—';
@@ -852,7 +849,11 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     e.stopPropagation();
     if (!startDate || !endDate) return;
-    const filters = { date_from: toISO(startDate), date_to: toISO(endDate) };
+    const filters = { 
+      // можно оставить ISO для бекенда, если нужно
+      date_from: startDate.toISOString().slice(0,10),
+      date_to: endDate.toISOString().slice(0,10)
+    };
     if (typeof fetchData === 'function') fetchData(filters);
     dropdown.classList.add('hidden');
   });

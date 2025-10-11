@@ -67,10 +67,17 @@ def update_tiktok_stats(blogger):
         print(f"[TikTok] Ошибка для {blogger}: {e}")
         stats = None
 
-    stats = stats or {"likes":0, "comments":0, "views":0, "videos":0, "subscribers":0}
+    stats = stats or {"likes":0, "comments":0, "views":0, "videos":0, "subscribers":0, "avatar_url":""}
 
+    # 🔹 Обновляем аватар, если парсер его вернул
+    if stats.get("avatar_url"):
+        blogger.avatar_url = stats["avatar_url"]
+        blogger.save(update_fields=["avatar_url"])
+        print(f"[TikTok] Аватар обновлён для {blogger}: {stats['avatar_url']}")
+
+    # 🔹 Обновляем статистику
     if stat:
-        for key in stats:
+        for key in ["likes", "comments", "views", "videos", "subscribers"]:
             setattr(stat, key, stats[key])
         stat.save()
     else:
@@ -145,10 +152,10 @@ def update_instagram_stats(blogger):
 
 def update_all_platforms(blogger):
     """Обновляет все платформы для одного блогера."""
-    update_youtube_stats(blogger)
+    # update_youtube_stats(blogger)
     update_tiktok_stats(blogger)
-    update_vk_stats(blogger)
-    update_instagram_stats(blogger)
+    # update_vk_stats(blogger)
+    # update_instagram_stats(blogger)
 
 from django.db.models import Q
 from django.views.decorators.cache import cache_page
@@ -159,20 +166,13 @@ from django.db.models import Q
 from .models import Blogger, SocialStats
 import json
 
-@cache_page(60 * 5)
 def bloggers_list(request):
     data = []
     platforms = ["youtube", "tiktok", "vk", "instagram"]
-
     names = request.GET.getlist("name")
     blogger_ids = request.GET.getlist("blogger_id")
     date_from = request.GET.get("date_from")
     date_to = request.GET.get("date_to")
-
-    cache_key = f"bloggers_list:{json.dumps(names)}:{json.dumps(blogger_ids)}:{date_from}:{date_to}"
-    cached_data = cache.get(cache_key)
-    if cached_data:
-        return JsonResponse(cached_data, safe=False)
 
     bloggers = Blogger.objects.all()
     combined_q = Q()
@@ -198,6 +198,7 @@ def bloggers_list(request):
 
     for b in bloggers:
         stats_dict = {}
+        update_all_platforms(b)
         for platform in platforms:
             latest_stat = (
                 SocialStats.objects.filter(blogger=b, platform=platform)
@@ -219,12 +220,12 @@ def bloggers_list(request):
         data.append({
             "id": b.id,
             "blogger_id": b.blogger_id,
+            "avatar_url": b.avatar_url,
             "name": f"{b.first_name} {b.last_name}",
             "telegram_url": b.telegram_url,
             "stats": stats_dict,
         })
 
-    cache.set(cache_key, data, 3600)
     return JsonResponse(data, safe=False)
 
 def stats_summary(request):

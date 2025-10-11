@@ -14,6 +14,7 @@ class Blogger(models.Model):
     youtube_url = models.URLField("YouTube профиль", blank=True, null=True)
     tiktok_url = models.URLField("TikTok профиль", blank=True, null=True)
 
+    avatar_url = models.CharField("URL Аватарки", max_length=2500)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
