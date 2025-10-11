@@ -198,7 +198,7 @@ def bloggers_list(request):
 
     for b in bloggers:
         stats_dict = {}
-        update_all_platforms(b)
+        # update_all_platforms(b)
         for platform in platforms:
             latest_stat = (
                 SocialStats.objects.filter(blogger=b, platform=platform)
