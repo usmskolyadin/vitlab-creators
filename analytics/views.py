@@ -152,10 +152,10 @@ def update_instagram_stats(blogger):
 
 def update_all_platforms(blogger):
     """Обновляет все платформы для одного блогера."""
-    # update_youtube_stats(blogger)
+    update_youtube_stats(blogger)
     update_tiktok_stats(blogger)
-    # update_vk_stats(blogger)
-    # update_instagram_stats(blogger)
+    update_vk_stats(blogger)
+    update_instagram_stats(blogger)
 
 from django.db.models import Q
 from django.views.decorators.cache import cache_page
